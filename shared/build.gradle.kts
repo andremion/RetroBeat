@@ -40,7 +40,8 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.activityCompose)
+            implementation(libs.androidx.exoplayer)
             implementation(libs.koin.android)
         }
     }
