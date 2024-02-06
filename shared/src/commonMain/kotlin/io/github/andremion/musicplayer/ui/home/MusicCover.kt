@@ -1,7 +1,12 @@
 package io.github.andremion.musicplayer.ui.home
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateInt
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,18 +38,35 @@ fun MusicCover(
             MusicCoverState.Playing -> 0.5f
         }
     }
+
     val translationFraction by transition.animateFloat(label = "translationFraction") { state ->
         when (state) {
             MusicCoverState.Paused -> 0f
             MusicCoverState.Playing -> 1f
         }
     }
+
     val shapeCornerSize by transition.animateInt(label = "shapeCornerSize") { state ->
         when (state) {
             MusicCoverState.Paused -> 0
             MusicCoverState.Playing -> 50
         }
     }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "infiniteTransition")
+
+    val rotation by infiniteTransition.animateFloat(
+        label = "rotation",
+        initialValue = 0f,
+        targetValue = if (currentState == MusicCoverState.Playing) 360f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 2_000,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        )
+    )
 
     var parentSize by remember { mutableStateOf(IntSize.Zero) }
     var bounds by remember { mutableStateOf(IntSize.Zero) }
@@ -55,11 +77,11 @@ fun MusicCover(
             .onPlaced { coordinates ->
                 parentSize = coordinates.parentLayoutCoordinates?.size ?: IntSize.Zero
                 bounds = coordinates.size
-                println("bounds: $bounds, parentSize: $parentSize")
             }
             .graphicsLayer {
                 translationX = (parentSize.width - bounds.width) / 2f// * translation
                 translationY = (parentSize.height - bounds.height) / 2f * translationFraction
+                rotationZ = rotation
                 shape = RoundedCornerShape(shapeCornerSize)
                 clip = true
             },
