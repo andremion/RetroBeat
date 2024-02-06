@@ -11,8 +11,8 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -62,9 +63,7 @@ fun MusicCover(
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "infiniteTransition")
-
-    val rotation by infiniteTransition.animateFloat(
+    val rotation by rememberInfiniteTransition(label = "infiniteTransition").animateFloat(
         label = "rotation",
         initialValue = 0f,
         targetValue = if (currentState == MusicCoverState.Playing) 360f else 0f,
@@ -78,30 +77,35 @@ fun MusicCover(
     )
 
     var parentSize by remember { mutableStateOf(IntSize.Zero) }
-    var bounds by remember { mutableStateOf(IntSize.Zero) }
-    var trackCount by remember { mutableIntStateOf(0) }
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+    val trackWidthPx = with(LocalDensity.current) { TrackWidth.toPx() }
+    val trackCount by remember {
+        derivedStateOf {
+            val trackRadius = min(imageSize.width, imageSize.height)
+            (trackRadius / trackWidthPx).roundToInt()
+        }
+    }
 
     AsyncImage(
         modifier = modifier
             .fillMaxWidth(widthFraction)
             .onPlaced { coordinates ->
                 parentSize = coordinates.parentLayoutCoordinates?.size ?: IntSize.Zero
-                bounds = coordinates.size
-                val w = bounds.width
-                val h = bounds.height
-                val trackRadius = min(w, h)
-                trackCount = (trackRadius / 50.dp.value).roundToInt()
+                imageSize = coordinates.size
             }
             .graphicsLayer {
-                translationX = (parentSize.width - bounds.width) / 2f// * transitionFraction
-                translationY = (parentSize.height - bounds.height) / 2f * transitionFraction
+                translationX = (parentSize.width - imageSize.width) / 2f * transitionFraction
+                translationY = (parentSize.height - imageSize.height) / 2f * transitionFraction
                 rotationZ = rotation
                 shape = RoundedCornerShape(shapeCornerSize)
                 clip = true
             }
             .drawWithContent {
                 drawContent()
-                drawTrack(trackCount, transitionFraction)
+                drawTrack(
+                    trackCount = trackCount,
+                    alpha = transitionFraction
+                )
             },
         model = uri,
         contentScale = ContentScale.FillWidth,
@@ -122,3 +126,4 @@ private fun ContentDrawScope.drawTrack(trackCount: Int, alpha: Float) {
 }
 
 private val TrackColor = Color(0x56FFFFFF)
+private val TrackWidth = 50.dp
