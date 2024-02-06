@@ -3,7 +3,7 @@ package io.github.andremion.musicplayer.ui.home
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -32,7 +32,7 @@ fun PlayerScreen() {
     }
     Box(
         modifier = Modifier
-            .systemBarsPadding()
+            .navigationBarsPadding()
             .fillMaxSize(),
     ) {
         MusicCover(

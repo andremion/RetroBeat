@@ -12,15 +12,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import kotlin.math.min
+import kotlin.math.roundToInt
+
 
 enum class MusicCoverState { Paused, Playing }
 
@@ -32,17 +41,17 @@ fun MusicCover(
 ) {
     val transition = updateTransition(targetState = currentState, label = "MusicCover")
 
+    val transitionFraction by transition.animateFloat(label = "transitionFraction") { state ->
+        when (state) {
+            MusicCoverState.Paused -> 0f
+            MusicCoverState.Playing -> 1f
+        }
+    }
+
     val widthFraction by transition.animateFloat(label = "widthFraction") { state ->
         when (state) {
             MusicCoverState.Paused -> 1f
             MusicCoverState.Playing -> 0.5f
-        }
-    }
-
-    val translationFraction by transition.animateFloat(label = "translationFraction") { state ->
-        when (state) {
-            MusicCoverState.Paused -> 0f
-            MusicCoverState.Playing -> 1f
         }
     }
 
@@ -70,6 +79,7 @@ fun MusicCover(
 
     var parentSize by remember { mutableStateOf(IntSize.Zero) }
     var bounds by remember { mutableStateOf(IntSize.Zero) }
+    var trackCount by remember { mutableIntStateOf(0) }
 
     AsyncImage(
         modifier = modifier
@@ -77,16 +87,38 @@ fun MusicCover(
             .onPlaced { coordinates ->
                 parentSize = coordinates.parentLayoutCoordinates?.size ?: IntSize.Zero
                 bounds = coordinates.size
+                val w = bounds.width
+                val h = bounds.height
+                val trackRadius = min(w, h)
+                trackCount = (trackRadius / 50.dp.value).roundToInt()
             }
             .graphicsLayer {
-                translationX = (parentSize.width - bounds.width) / 2f// * translation
-                translationY = (parentSize.height - bounds.height) / 2f * translationFraction
+                translationX = (parentSize.width - bounds.width) / 2f// * transitionFraction
+                translationY = (parentSize.height - bounds.height) / 2f * transitionFraction
                 rotationZ = rotation
                 shape = RoundedCornerShape(shapeCornerSize)
                 clip = true
+            }
+            .drawWithContent {
+                drawContent()
+                drawTrack(trackCount, transitionFraction)
             },
         model = uri,
         contentScale = ContentScale.FillWidth,
         contentDescription = "Music Cover"
     )
 }
+
+private fun ContentDrawScope.drawTrack(trackCount: Int, alpha: Float) {
+    val radius = size.minDimension / 2.0f
+    for (i in 0 until trackCount) {
+        drawCircle(
+            color = TrackColor,
+            radius = radius * (i / trackCount.toFloat()),
+            alpha = alpha,
+            style = Stroke(width = 1.dp.toPx())
+        )
+    }
+}
+
+private val TrackColor = Color(0x56FFFFFF)
