@@ -1,5 +1,6 @@
 package io.github.andremion.musicplayer.ui.home
 
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -25,7 +26,7 @@ fun ProgressBar(
 ) {
     val coercedProgress by animateFloatAsState(
         targetValue = progress.coerceIn(0f, 1f),
-        animationSpec = tween(2_000),
+        animationSpec = tween(easing = LinearEasing),
         label = "progress"
     )
 
@@ -49,7 +50,7 @@ fun ProgressBar(
                 progressColor = progressColor,
                 strokeWidth = strokeWidth
             )
-        } else if (startAngle < HALF_FULL_ANGLE) {
+        } else if (startAngle < HALF_OF_FULL_ANGLE) {
             drawArc(
                 startAngle = startAngle,
                 trackSweepAngle = sweepAngle,
@@ -60,9 +61,9 @@ fun ProgressBar(
             )
         } else {
             drawArc(
-                startAngle = HALF_FULL_ANGLE,
-                trackSweepAngle = HALF_FULL_ANGLE,
-                progressSweepAngle = HALF_FULL_ANGLE * coercedProgress,
+                startAngle = HALF_OF_FULL_ANGLE,
+                trackSweepAngle = HALF_OF_FULL_ANGLE,
+                progressSweepAngle = HALF_OF_FULL_ANGLE * coercedProgress,
                 trackColor = trackColor,
                 progressColor = progressColor,
                 strokeWidth = strokeWidth
@@ -122,4 +123,4 @@ private val DefaultHeight = 4.dp
 private const val GAP_ANGLE = 90f
 private const val FULL_PROGRESS_ANGLE = 360 - GAP_ANGLE
 private const val START_ANGLE = GAP_ANGLE * 1.5f
-private const val HALF_FULL_ANGLE = 180f
+private const val HALF_OF_FULL_ANGLE = 180f
