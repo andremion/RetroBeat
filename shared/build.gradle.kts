@@ -27,13 +27,15 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
 
             implementation(libs.kotlinx.coroutines)
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
             implementation(libs.precompose)
             implementation(libs.precompose.viewmodel)
             implementation(libs.precompose.koin)
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
+            implementation(libs.coil.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -48,7 +50,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.andremion.musicplayer"
+    namespace = "io.github.andremion.lplayer"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

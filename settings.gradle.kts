@@ -15,6 +15,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MusicPlayer"
+rootProject.name = "LPlayer"
 include(":androidApp")
 include(":shared")
