@@ -52,7 +52,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.andremion.lplayer"
+    namespace = "io.github.andremion.musicplayer"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {

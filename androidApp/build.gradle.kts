@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "io.github.andremion.lplayer.android"
+    namespace = "io.github.andremion.musicplayer.android"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "io.github.andremion.lplayer.android"
+        applicationId = "io.github.andremion.musicplayer.android"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
