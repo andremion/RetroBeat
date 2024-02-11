@@ -1,16 +1,27 @@
 package io.github.andremion.lplayer.data
 
-import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import io.github.andremion.lplayer.domain.AudioPlayer
 
-internal class AudioPlayerImpl(context: Context) : AudioPlayer {
-
-    private val player = ExoPlayer.Builder(context).build()
+internal class AudioPlayerImpl(private val player: ExoPlayer) : AudioPlayer {
 
     override fun setMediaUri(uri: String) {
         player.setMediaItem(MediaItem.fromUri(uri))
+        player.prepare()
+    }
+
+    /**
+     * You shouldn't perform these steps before the app is in the foreground.
+     * If your player is in an Activity or Fragment,
+     * this means preparing the player in the onStart() lifecycle method on API level 24 and higher
+     * or the onResume() lifecycle method on API level 23 and below.
+     * For a player that's in a Service, you can prepare it in onCreate().
+     */
+    override fun addMediaUris(uris: List<String>) {
+        uris.forEach { uri ->
+            player.addMediaItem(MediaItem.fromUri(uri))
+        }
         player.prepare()
     }
 

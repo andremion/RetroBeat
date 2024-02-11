@@ -5,8 +5,8 @@ kotlinx-coroutines = "1.7.3"
 android-minSdk = "21"
 android-compileSdk = "34"
 android-targetSdk = "34"
-androidx-activityCompose = "1.8.2"
-androidx-exoplayer = "1.2.1"
+androidx-activity-compose = "1.8.2"
+androidx-media-exoplayer = "1.2.1"
 jetbrains-compose = "1.6.0-beta02"
 koin = "3.5.3"
 koin-compose = "1.1.2"
@@ -17,8 +17,9 @@ coil-compose = "2.5.0"
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-androidx-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "androidx-exoplayer" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
+androidx-media-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "androidx-media-exoplayer" }
+androidx-media-session = { module = "androidx.media3:media3-session", version.ref = "androidx-media-exoplayer" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin-compose" }

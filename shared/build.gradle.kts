@@ -42,8 +42,10 @@ kotlin {
             implementation(libs.kotlinx.coroutines.test)
         }
         androidMain.dependencies {
-            implementation(libs.androidx.activityCompose)
-            implementation(libs.androidx.exoplayer)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.media.exoplayer)
+            implementation(libs.androidx.media.session)
+            implementation("androidx.media3:media3-ui:" + libs.versions.androidx.media.exoplayer.get()) // TODO Remove later
             implementation(libs.koin.android)
         }
     }

@@ -2,6 +2,7 @@ package io.github.andremion.lplayer.domain
 
 interface AudioPlayer {
     fun setMediaUri(uri: String)
+    fun addMediaUris(uris: List<String>)
     fun play()
     fun pause()
     fun stop()
