@@ -1,4 +1,4 @@
-package io.github.andremion.musicplayer.ui.home
+package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,53 +19,53 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ProgressBar(
+fun TimeBar(
     modifier: Modifier,
-    progress: Float,
+    position: Float,
     transition: Float
 ) {
-    val coercedProgress by animateFloatAsState(
-        targetValue = progress.coerceIn(0f, 1f),
+    val coercedPosition by animateFloatAsState(
+        label = "position",
+        targetValue = position.coerceIn(0f, 1f),
         animationSpec = tween(easing = LinearEasing),
-        label = "progress"
     )
 
-    val progressColor = ProgressIndicatorDefaults.linearColor
     val trackColor = ProgressIndicatorDefaults.linearTrackColor
+    val positionColor = ProgressIndicatorDefaults.linearColor
 
     Canvas(
         modifier = modifier
             .heightIn(min = DefaultHeight)
             .padding(DefaultHeight / 2) // Extra padding to avoid cuttings on arc
-            .progressSemantics(coercedProgress)
+            .progressSemantics(coercedPosition)
     ) {
-        val startAngle = FULL_PROGRESS_ANGLE - START_ANGLE * transition
-        val sweepAngle = FULL_PROGRESS_ANGLE * transition
+        val startAngle = TIME_BAR_FULL_ANGLE - START_ANGLE * transition
+        val sweepAngle = TIME_BAR_FULL_ANGLE * transition
         val strokeWidth = DefaultHeight.toPx()
 
         if (size.height <= strokeWidth) {
             drawLine(
-                progress = coercedProgress,
+                position = coercedPosition,
                 trackColor = trackColor,
-                progressColor = progressColor,
+                positionColor = positionColor,
                 strokeWidth = strokeWidth
             )
         } else if (startAngle < HALF_OF_FULL_ANGLE) {
             drawArc(
                 startAngle = startAngle,
                 trackSweepAngle = sweepAngle,
-                progressSweepAngle = sweepAngle * coercedProgress,
+                positionSweepAngle = sweepAngle * coercedPosition,
                 trackColor = trackColor,
-                progressColor = progressColor,
+                positionColor = positionColor,
                 strokeWidth = strokeWidth
             )
         } else {
             drawArc(
                 startAngle = HALF_OF_FULL_ANGLE,
                 trackSweepAngle = HALF_OF_FULL_ANGLE,
-                progressSweepAngle = HALF_OF_FULL_ANGLE * coercedProgress,
+                positionSweepAngle = HALF_OF_FULL_ANGLE * coercedPosition,
                 trackColor = trackColor,
-                progressColor = progressColor,
+                positionColor = positionColor,
                 strokeWidth = strokeWidth
             )
         }
@@ -73,9 +73,9 @@ fun ProgressBar(
 }
 
 private fun DrawScope.drawLine(
-    progress: Float,
+    position: Float,
     trackColor: Color,
-    progressColor: Color,
+    positionColor: Color,
     strokeWidth: Float
 ) {
     drawLine(
@@ -85,22 +85,24 @@ private fun DrawScope.drawLine(
         strokeWidth = strokeWidth,
         cap = StrokeCap.Round
     )
-    val endX = size.width * progress
-    drawLine(
-        color = progressColor,
-        start = Offset.Zero,
-        end = Offset(endX, 0f),
-        strokeWidth = strokeWidth,
-        cap = StrokeCap.Round
-    )
+    if (position > 0f) {
+        val endX = size.width * position
+        drawLine(
+            color = positionColor,
+            start = Offset.Zero,
+            end = Offset(endX, 0f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round
+        )
+    }
 }
 
 private fun DrawScope.drawArc(
     startAngle: Float,
     trackSweepAngle: Float,
-    progressSweepAngle: Float,
+    positionSweepAngle: Float,
     trackColor: Color,
-    progressColor: Color,
+    positionColor: Color,
     strokeWidth: Float,
 ) {
     drawArc(
@@ -111,9 +113,9 @@ private fun DrawScope.drawArc(
         style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
     )
     drawArc(
-        color = progressColor,
+        color = positionColor,
         startAngle = startAngle,
-        sweepAngle = progressSweepAngle,
+        sweepAngle = positionSweepAngle,
         useCenter = false,
         style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
     )
@@ -121,6 +123,6 @@ private fun DrawScope.drawArc(
 
 private val DefaultHeight = 4.dp
 private const val GAP_ANGLE = 90f
-private const val FULL_PROGRESS_ANGLE = 360 - GAP_ANGLE
+private const val TIME_BAR_FULL_ANGLE = 360 - GAP_ANGLE
 private const val START_ANGLE = GAP_ANGLE * 1.5f
 private const val HALF_OF_FULL_ANGLE = 180f

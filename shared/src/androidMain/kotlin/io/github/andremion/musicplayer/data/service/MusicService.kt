@@ -20,14 +20,17 @@ class MusicService : MediaSessionService() {
     // for example to integrate with system media controls on mobile and large screen devices.
     private var mediaSession: MediaSession? = null
 
+
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
         mediaSession = MediaSession.Builder(this, player).build()
-        DefaultMediaNotificationProvider.Builder(this)
-            .setChannelId("music_player")
-            .setChannelName(R.string.default_notification_channel_name)
-            .build()
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider.Builder(this)
+                .setChannelId("now_playing")
+                .setChannelName(R.string.default_notification_channel_name)
+                .build()
+        )
     }
 
     // Give other clients access to the media session.

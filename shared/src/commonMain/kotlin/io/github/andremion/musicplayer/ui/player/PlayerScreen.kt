@@ -1,4 +1,4 @@
-package io.github.andremion.musicplayer.ui.home
+package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,7 +35,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,15 +43,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
+import io.github.andremion.musicplayer.presentation.player.PlayerUiState
+import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
 import io.github.andremion.musicplayer.ui.animation.Fade
 import io.github.andremion.musicplayer.ui.animation.SceneRoot
 import io.github.andremion.musicplayer.ui.animation.SlideFromBottom
 import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
-import kotlinx.coroutines.delay
+import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
+import moe.tlaster.precompose.koin.koinViewModel
 
 @Composable
 fun PlayerScreen() {
-    var currentState by remember { mutableStateOf(MusicCoverState.Paused) }
+    val viewModel = koinViewModel(PlayerViewModel::class)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ScreenContent(uiState, viewModel::onUiEvent)
+}
+
+@Composable
+private fun ScreenContent(
+    uiState: PlayerUiState,
+    onUiEvent: (PlayerUiEvent) -> Unit
+) {
+    println("$uiState")
     SceneRoot {
         Box(
             modifier = Modifier
@@ -67,12 +80,11 @@ fun PlayerScreen() {
                 MusicCover(
                     modifier = modifier.animateBounds(
                         onTransitionUpdate = { fraction -> transition = fraction },
-                        onTransitionEnd = { rotateCover = currentState == MusicCoverState.Playing }
+                        onTransitionEnd = { rotateCover = uiState.isPlaying }
                     ),
                     uri = "https://e-cdns-images.dzcdn.net/images/cover/3071378af24d789b8fc69e95162041e4/500x500-000000-80-0-0.jpg",
                     rotate = rotateCover,
                     transition = transition,
-                    onEndRotation = { currentState = MusicCoverState.Paused }
                 )
             }
 
@@ -80,19 +92,25 @@ fun PlayerScreen() {
                 FloatingActionButton(
                     modifier = modifier.animateBounds(),
                     onClick = {
-                        if (currentState == MusicCoverState.Paused) {
-                            currentState = MusicCoverState.Playing
-                        } else {
+                        if (uiState.isPlaying) {
                             rotateCover = false
+                            onUiEvent(PlayerUiEvent.PauseClick)
+                        } else {
+                            onUiEvent(PlayerUiEvent.PlayClick)
                         }
                     },
                 ) {
                     Icon(
-                        imageVector = when (currentState) {
-                            MusicCoverState.Paused -> Icons.Rounded.PlayArrow
-                            MusicCoverState.Playing -> Icons.Rounded.Pause
+                        imageVector = if (uiState.isPlaying) {
+                            Icons.Rounded.Pause
+                        } else {
+                            Icons.Rounded.PlayArrow
                         },
-                        contentDescription = "Play/Pause"
+                        contentDescription = if (uiState.isPlaying) {
+                            "Pause"
+                        } else {
+                            "Play"
+                        },
                     )
                 }
             }
@@ -117,7 +135,7 @@ fun PlayerScreen() {
             val time = rememberMovableContent { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = "00:10",
+                    text = uiState.time,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -126,28 +144,20 @@ fun PlayerScreen() {
             val duration = rememberMovableContent { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = "03:30",
+                    text = uiState.duration,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            var progressValue by remember { mutableFloatStateOf(0f) }
-            LaunchedEffect(true) {
-                while (progressValue < 1f) {
-                    progressValue += .03f
-                    delay(1000)
-                }
-            }
-
-            val progress = rememberMovableContent { modifier ->
+            val timeBar = rememberMovableContent { modifier ->
                 var transition by remember { mutableFloatStateOf(0f) }
-                ProgressBar(
+                TimeBar(
                     modifier = modifier
                         .animateBounds(
-                            onTransitionUpdate = { fraction -> transition = fraction },
+                            onTransitionUpdate = { fraction -> transition = fraction }
                         ),
-                    progress = progressValue,
+                    position = uiState.position,
                     transition = transition
                 )
             }
@@ -155,7 +165,7 @@ fun PlayerScreen() {
             SlideFromBottom(
                 modifier = Modifier
                     .padding(top = CoverHeight),
-                visible = currentState == MusicCoverState.Paused,
+                visible = !uiState.isPlaying,
             ) {
                 Playlist(Modifier)
             }
@@ -164,7 +174,7 @@ fun PlayerScreen() {
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(top = CoverHeight * 1.3f),
-                visible = currentState == MusicCoverState.Playing,
+                visible = uiState.isPlaying,
             ) {
                 Row {
                     IconButton(
@@ -194,7 +204,7 @@ fun PlayerScreen() {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
-                visible = currentState == MusicCoverState.Playing,
+                visible = uiState.isPlaying,
             ) {
                 Row(
                     modifier = Modifier
@@ -244,111 +254,76 @@ fun PlayerScreen() {
                 }
             }
 
-            when (currentState) {
-                MusicCoverState.Paused -> {
-                    Box {
-                        cover(
-                            Modifier
-                                .height(CoverHeight)
-                                .fillMaxWidth()
-                        )
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f))
-                                .padding(
-                                    horizontal = 16.dp,
-                                    vertical = 8.dp
-                                )
-                        ) {
-                            headline(Modifier)
-                            Row(
-                                modifier = Modifier.padding(end = 16.dp + PlayButtonSize),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                time(Modifier)
-                                progress(
-                                    Modifier.weight(1f)
-                                )
-                                duration(Modifier)
-                            }
-                        }
-                        playButton(
-                            Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(horizontal = 16.dp)
-                                .offset(y = (56 / 2f).dp)
-                        )
-                    }
-                }
-
-                MusicCoverState.Playing -> {
-                    Box(
+            if (uiState.isPlaying) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    cover(
+                        Modifier
+                            .padding(16.dp)
+                            .height(CoverHeight)
+                            .aspectRatio(1f)
+                    )
+                    Row(
                         modifier = Modifier
-                            .align(Alignment.Center),
-                        contentAlignment = Alignment.Center,
+                            .matchParentSize()
+                            .padding(horizontal = 50.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom,
                     ) {
-                        cover(
-                            Modifier
-                                .padding(16.dp)
-                                .height(CoverHeight)
-                                .aspectRatio(1f)
-                        )
+                        time(Modifier)
+                        duration(Modifier)
+                    }
+                    timeBar(Modifier.matchParentSize())
+                    playButton(Modifier)
+                }
+                headline(
+                    Modifier
+                        .statusBarsPadding()
+                        .padding(16.dp)
+                        .align(Alignment.TopCenter)
+                )
+            } else {
+                Box {
+                    cover(
+                        Modifier
+                            .height(CoverHeight)
+                            .fillMaxWidth()
+                    )
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f))
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 8.dp
+                            )
+                    ) {
+                        headline(Modifier)
                         Row(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .padding(horizontal = 50.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Bottom,
+                            modifier = Modifier.padding(end = 16.dp + PlayButtonSize),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             time(Modifier)
+                            timeBar(
+                                Modifier.weight(1f)
+                            )
                             duration(Modifier)
                         }
-                        progress(Modifier.matchParentSize())
-                        playButton(Modifier)
                     }
-                    headline(
+                    playButton(
                         Modifier
-                            .statusBarsPadding()
-                            .padding(16.dp)
-                            .align(Alignment.TopCenter)
+                            .align(Alignment.BottomEnd)
+                            .padding(horizontal = 16.dp)
+                            .offset(y = (56 / 2f).dp)
                     )
                 }
             }
         }
-
     }
-
-//    ConstraintLayout(
-//        modifier = Modifier
-//            .navigationBarsPadding()
-//            .fillMaxSize(),
-//    ) {
-//
-//        val (musicCover, playButton) = createRefs()
-//
-//        MusicCover(
-//            modifier = Modifier
-//                .constrainAs(musicCover) {
-//                    when (currentState) {
-//                        MusicCoverState.Paused -> {
-//                            top.linkTo(parent.top)
-//                        }
-//
-//                        MusicCoverState.Playing -> {
-//                            top.linkTo(parent.top)
-//                            bottom.linkTo(parent.bottom)
-//                        }
-//                    }
-//                    start.linkTo(parent.start)
-//                    end.linkTo(parent.end)
-//                }
-//                .height(CoverHeight),
-//            currentState = currentState,
-//            uri = "https://e-cdns-images.dzcdn.net/images/cover/3071378af24d789b8fc69e95162041e4/500x500-000000-80-0-0.jpg",
-//        )
-//    }
 }
 
 private val CoverHeight = 256.dp
@@ -362,6 +337,7 @@ private fun Playlist(modifier: Modifier) {
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(top = PlayButtonSize / 2),
                 title = {
                     Column {
                         Text(

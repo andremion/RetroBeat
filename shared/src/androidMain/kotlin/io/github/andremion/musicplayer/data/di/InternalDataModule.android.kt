@@ -3,7 +3,7 @@ package io.github.andremion.musicplayer.data.di
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
-import io.github.andremion.musicplayer.data.AudioPlayerImpl
+import io.github.andremion.musicplayer.data.player.AudioPlayerImpl
 import io.github.andremion.musicplayer.domain.AudioPlayer
 import org.koin.dsl.module
 
@@ -26,7 +26,7 @@ internal actual object InternalDataModule {
         }
         factory<AudioPlayer> {
             AudioPlayerImpl(
-                player = get()
+                context = get()
             )
         }
     }

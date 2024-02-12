@@ -1,21 +1,28 @@
 package io.github.andremion.musicplayer.domain
 
+import kotlinx.coroutines.flow.SharedFlow
+
 interface AudioPlayer {
-    fun setMediaUri(uri: String)
-    fun addMediaUris(uris: List<String>)
+
+    val position: Float
+    val time: String
+    val duration: String
+
+    val events: SharedFlow<Event>
+
     fun play()
     fun pause()
-    fun stop()
-    fun seekTo(position: Long)
     fun release()
-    fun addListener(listener: Listener)
-    fun removeListener(listener: Listener)
 
-    interface Listener {
-        fun onPlay()
-        fun onPause()
-        fun onStop()
-        fun onSeekTo(position: Long)
-        fun onRelease()
+    sealed interface Event {
+        data class IsPlayingChanged(
+            val isPlaying: Boolean
+        ) : Event
+
+        data class ProgressChanged(
+            val position: Float,
+            val time: String,
+            val duration: String,
+        ) : Event
     }
 }
