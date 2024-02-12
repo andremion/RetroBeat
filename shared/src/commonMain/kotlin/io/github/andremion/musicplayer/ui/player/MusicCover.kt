@@ -1,4 +1,4 @@
-package io.github.andremion.musicplayer.ui.home
+package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -12,7 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -27,8 +26,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-enum class MusicCoverState { Paused, Playing }
-
 private const val HALF_OF_FULL_ANGLE = 180f
 private const val FULL_ANGLE = 360f
 
@@ -38,7 +35,6 @@ fun MusicCover(
     uri: String,
     rotate: Boolean,
     transition: Float,
-    onEndRotation: () -> Unit
 ) {
     val rotation by rememberInfiniteTransition().animateFloat(
         label = "rotation",
@@ -53,25 +49,20 @@ fun MusicCover(
     )
 
     var endRotationAnimation by remember { mutableStateOf(Animatable(0f)) }
-    val coroutineScope = rememberCoroutineScope()
-    val current = rotation
 
     LaunchedEffect(rotate) {
         // Choose the shortest distance to the 0 rotation
-        val target = if (current > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
-        if (!rotate) {
-            endRotationAnimation = Animatable(current)
-            coroutineScope.launch {
-                endRotationAnimation.animateTo(target, animationSpec = tween())
-                onEndRotation()
-            }
+        val target = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
+        if (!rotate && rotation != target) {
+            endRotationAnimation = Animatable(rotation)
+            launch { endRotationAnimation.animateTo(target, animationSpec = tween(1000)) }
         }
     }
 
     AsyncImage(
         modifier = modifier
             .graphicsLayer {
-                rotationZ = if (rotate) rotation else endRotationAnimation.value
+                rotationZ = if (endRotationAnimation.isRunning) endRotationAnimation.value else rotation
                 shape = RoundedCornerShape((SHAPE_CORNER_PERCENT * transition).toInt())
                 clip = true
             }
