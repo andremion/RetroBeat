@@ -123,6 +123,6 @@ private fun DrawScope.drawArc(
 
 private val DefaultHeight = 4.dp
 private const val GAP_ANGLE = 90f
-private const val TIME_BAR_FULL_ANGLE = 360 - GAP_ANGLE
+private const val TIME_BAR_FULL_ANGLE = 360f - GAP_ANGLE
 private const val START_ANGLE = GAP_ANGLE * 1.5f
 private const val HALF_OF_FULL_ANGLE = 180f

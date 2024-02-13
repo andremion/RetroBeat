@@ -40,22 +40,17 @@ fun MusicCover(
         label = "rotation",
         initialValue = 0f,
         targetValue = if (rotate) FULL_ANGLE else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 2_000,
-                easing = LinearEasing
-            ),
-        )
+        animationSpec = infiniteRepeatable(animation = tween(durationMillis = 2_000, easing = LinearEasing))
     )
 
     var endRotationAnimation by remember { mutableStateOf(Animatable(0f)) }
 
     LaunchedEffect(rotate) {
-        // Choose the shortest distance to the 0 rotation
-        val target = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
         if (!rotate) {
+            // Choose the shortest distance to the 0 rotation
+            val targetAngle = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
             endRotationAnimation = Animatable(rotation)
-            endRotationAnimation.animateTo(target)
+            endRotationAnimation.animateTo(targetAngle, animationSpec = tween(durationMillis = 500))
             onRotationEnd()
         }
     }

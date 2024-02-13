@@ -1,9 +1,16 @@
 package io.github.andremion.musicplayer.presentation.player
 
 data class PlayerUiState(
-    val isPlaying: Boolean = false,
-    val isPlayButtonEnabled: Boolean = true,
+    val player: Player = Player.Idle,
     val position: Float = 0f,
     val time: String = "",
     val duration: String = "",
-)
+) {
+
+    enum class Player {
+        Idle, Playing, Pausing, Paused;
+
+        val isPlaying: Boolean
+            get() = this == Playing || this == Pausing
+    }
+}

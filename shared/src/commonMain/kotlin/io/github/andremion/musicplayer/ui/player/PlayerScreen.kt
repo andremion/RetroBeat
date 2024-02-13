@@ -1,5 +1,6 @@
 package io.github.andremion.musicplayer.ui.player
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -73,18 +70,19 @@ private fun ScreenContent(
                 .fillMaxSize(),
         ) {
 
-            var rotateCover by remember { mutableStateOf(false) }
+            val isPlaying = uiState.player.isPlaying
+
+            val sceneTransition by animateFloatAsState(
+                targetValue = if (isPlaying) 1f else 0f,
+            )
 
             val cover = rememberMovableContent { modifier ->
-                var transition by remember { mutableFloatStateOf(0f) }
                 MusicCover(
-                    modifier = modifier.animateBounds(
-                        onTransitionUpdate = { fraction -> transition = fraction },
-                        onTransitionEnd = { rotateCover = uiState.isPlaying }
-                    ),
+                    modifier = modifier.animateBounds(),
                     uri = "https://e-cdns-images.dzcdn.net/images/cover/3071378af24d789b8fc69e95162041e4/500x500-000000-80-0-0.jpg",
-                    rotate = rotateCover,
-                    transition = transition,
+                    transition = sceneTransition,
+                    rotate = uiState.player == PlayerUiState.Player.Playing,
+                    onRotationEnd = { onUiEvent(PlayerUiEvent.CoverRotationEnd) }
                 )
             }
 
@@ -92,8 +90,7 @@ private fun ScreenContent(
                 FloatingActionButton(
                     modifier = modifier.animateBounds(),
                     onClick = {
-                        if (uiState.isPlaying) {
-                            rotateCover = false
+                        if (isPlaying) {
                             onUiEvent(PlayerUiEvent.PauseClick)
                         } else {
                             onUiEvent(PlayerUiEvent.PlayClick)
@@ -101,12 +98,12 @@ private fun ScreenContent(
                     },
                 ) {
                     Icon(
-                        imageVector = if (uiState.isPlaying) {
+                        imageVector = if (isPlaying) {
                             Icons.Rounded.Pause
                         } else {
                             Icons.Rounded.PlayArrow
                         },
-                        contentDescription = if (uiState.isPlaying) {
+                        contentDescription = if (isPlaying) {
                             "Pause"
                         } else {
                             "Play"
@@ -151,21 +148,17 @@ private fun ScreenContent(
             }
 
             val timeBar = rememberMovableContent { modifier ->
-                var transition by remember { mutableFloatStateOf(0f) }
                 TimeBar(
-                    modifier = modifier
-                        .animateBounds(
-                            onTransitionUpdate = { fraction -> transition = fraction }
-                        ),
+                    modifier = modifier.animateBounds(),
                     position = uiState.position,
-                    transition = transition
+                    transition = sceneTransition
                 )
             }
 
             SlideFromBottom(
                 modifier = Modifier
                     .padding(top = CoverHeight),
-                visible = !uiState.isPlaying,
+                visible = !isPlaying,
             ) {
                 Playlist(Modifier)
             }
@@ -174,7 +167,7 @@ private fun ScreenContent(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(top = CoverHeight * 1.3f),
-                visible = uiState.isPlaying,
+                visible = isPlaying,
             ) {
                 Row {
                     IconButton(
@@ -204,7 +197,7 @@ private fun ScreenContent(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
-                visible = uiState.isPlaying,
+                visible = isPlaying,
             ) {
                 Row(
                     modifier = Modifier
@@ -254,7 +247,7 @@ private fun ScreenContent(
                 }
             }
 
-            if (uiState.isPlaying) {
+            if (isPlaying) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center),

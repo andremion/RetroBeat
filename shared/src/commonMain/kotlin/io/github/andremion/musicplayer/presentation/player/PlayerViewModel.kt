@@ -32,7 +32,11 @@ class PlayerViewModel(
                 is AudioPlayer.Event.IsPlayingChanged -> {
                     mutableState.update { state ->
                         state.copy(
-                            isPlaying = event.isPlaying
+                            player = if (event.isPlaying) {
+                                PlayerUiState.Player.Playing
+                            } else {
+                                PlayerUiState.Player.Pausing
+                            }
                         )
                     }
                 }
@@ -53,7 +57,7 @@ class PlayerViewModel(
             )
         }
         updateProgressJob?.cancel()
-        if (uiState.value.isPlaying) {
+        if (uiState.value.player == PlayerUiState.Player.Playing) {
             viewModelScope.launch {
                 delay(1000)
                 updateProgress(audioPlayer.position, audioPlayer.time, audioPlayer.duration)
@@ -69,6 +73,14 @@ class PlayerViewModel(
 
             is PlayerUiEvent.PauseClick -> {
                 audioPlayer.pause()
+            }
+
+            is PlayerUiEvent.CoverRotationEnd -> {
+                mutableState.update { state ->
+                    state.copy(
+                        player = PlayerUiState.Player.Paused,
+                    )
+                }
             }
         }
     }
