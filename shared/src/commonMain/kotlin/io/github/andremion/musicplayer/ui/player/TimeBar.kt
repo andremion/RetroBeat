@@ -4,7 +4,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.material3.ProgressIndicatorDefaults
@@ -27,7 +27,7 @@ fun TimeBar(
     val coercedPosition by animateFloatAsState(
         label = "position",
         targetValue = position.coerceIn(0f, 1f),
-        animationSpec = tween(easing = LinearEasing),
+        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
     )
 
     val trackColor = ProgressIndicatorDefaults.linearTrackColor
@@ -35,7 +35,7 @@ fun TimeBar(
 
     Canvas(
         modifier = modifier
-            .heightIn(min = DefaultHeight)
+            .height(DefaultHeight)
             .padding(DefaultHeight / 2) // Extra padding to avoid cuttings on arc
             .progressSemantics(coercedPosition)
     ) {
