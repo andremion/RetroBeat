@@ -44,6 +44,14 @@ class PlayerViewModel(
                 is AudioPlayer.Event.ProgressChanged -> {
                     updateProgress(event.position, event.time, event.duration)
                 }
+
+                is AudioPlayer.Event.RepeatModeChanged -> {
+                    mutableState.update { state ->
+                        state.copy(
+                            repeatMode = event.mode
+                        )
+                    }
+                }
             }
         }.launchIn(viewModelScope)
     }
@@ -81,6 +89,10 @@ class PlayerViewModel(
                         player = PlayerUiState.Player.Paused,
                     )
                 }
+            }
+
+            PlayerUiEvent.RepeatClick -> {
+                audioPlayer.toggleRepeatMode()
             }
         }
     }

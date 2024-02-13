@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -31,6 +32,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.andremion.musicplayer.domain.AudioPlayer
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
 import io.github.andremion.musicplayer.presentation.player.PlayerUiState
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
@@ -170,14 +173,21 @@ private fun ScreenContent(
                 visible = isPlaying,
             ) {
                 Row {
-                    IconButton(
-                        onClick = {
-
-                        }
+                    IconToggleButton(
+                        checked = uiState.repeatMode != AudioPlayer.RepeatMode.Off,
+                        onCheckedChange = { onUiEvent(PlayerUiEvent.RepeatClick) }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Repeat,
-                            contentDescription = "Repeat",
+                            imageVector = when (uiState.repeatMode) {
+                                AudioPlayer.RepeatMode.Off -> Icons.Rounded.Repeat
+                                AudioPlayer.RepeatMode.One -> Icons.Rounded.RepeatOne
+                                AudioPlayer.RepeatMode.All -> Icons.Rounded.Repeat
+                            },
+                            contentDescription = when (uiState.repeatMode) {
+                                AudioPlayer.RepeatMode.Off -> "Repeat off"
+                                AudioPlayer.RepeatMode.One -> "Repeat one"
+                                AudioPlayer.RepeatMode.All -> "Repeat all"
+                            },
                         )
                     }
                     IconButton(

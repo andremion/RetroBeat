@@ -6,6 +6,8 @@ import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
+import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.session.MediaController
@@ -28,13 +30,17 @@ internal class AudioPlayerImpl(
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
+    private val player: Player
+        get() = controllerFuture.get()
 
     override val position: Float
-        get() = (controllerFuture.get().currentPosition / controllerFuture.get().duration.toFloat()).coerceIn(0f, 1f)
+        get() = (player.currentPosition / player.duration.toFloat()).coerceIn(0f, 1f)
     override val time: String
-        get() = Util.getStringForTime(formatBuilder, formatter, controllerFuture.get().currentPosition)
+        get() = Util.getStringForTime(formatBuilder, formatter, player.currentPosition)
     override val duration: String
-        get() = Util.getStringForTime(formatBuilder, formatter, controllerFuture.get().duration)
+        get() = Util.getStringForTime(formatBuilder, formatter, player.duration)
+    override val repeatMode: Int
+        get() = player.repeatMode
 
     private val mutableEvents = MutableSharedFlow<AudioPlayer.Event>(extraBufferCapacity = 1)
     override val events: SharedFlow<AudioPlayer.Event> = mutableEvents.asSharedFlow()
@@ -44,11 +50,20 @@ internal class AudioPlayerImpl(
     }
 
     override fun play() {
-        controllerFuture.get().play()
+        player.play()
     }
 
     override fun pause() {
-        controllerFuture.get().pause()
+        player.pause()
+    }
+
+    override fun toggleRepeatMode() {
+        if (player.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {
+            player.repeatMode = RepeatModeUtil.getNextRepeatMode(
+                /* currentMode = */ player.repeatMode,
+                /* enabledModes = */ RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE or RepeatModeUtil.REPEAT_TOGGLE_MODE_ALL
+            )
+        }
     }
 
     override fun release() {
@@ -81,7 +96,7 @@ internal class AudioPlayerImpl(
      * For a player that's in a Service, you can prepare it in onCreate().
      */
     private fun onMediaControllerInitialized() {
-        controllerFuture.get().setMediaItem(
+        player.setMediaItem(
             MediaItem.Builder()
                 .setMediaId("1644464022")
                 .setUri("https://cdns-preview-d.dzcdn.net/stream/c-ddf3ecfe031b0e38be1f7cef597d6af1-7.mp3")
@@ -95,8 +110,8 @@ internal class AudioPlayerImpl(
                 )
                 .build()
         )
-        controllerFuture.get().prepare()
-        controllerFuture.get().play()
+        player.prepare()
+        player.play()
     }
 
     private fun releaseMediaController() {

@@ -38,8 +38,8 @@ class MediaControllerListener(
         if (events.containsAny(
                 Player.EVENT_PLAYBACK_STATE_CHANGED,
                 Player.EVENT_PLAY_WHEN_READY_CHANGED,
-                Player.EVENT_IS_PLAYING_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
+                Player.EVENT_AVAILABLE_COMMANDS_CHANGED,
+                Player.EVENT_IS_PLAYING_CHANGED
             )
         ) {
             updateProgress()
@@ -135,7 +135,21 @@ class MediaControllerListener(
     }
 
     private fun updateRepeatModeButton() {
-        // TODO("Not yet implemented")
+        if (mediaController.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {
+            val repeatMode = mediaController.repeatMode
+            mutableEvents.tryEmit(
+                AudioPlayer.Event.RepeatModeChanged(
+                    when (repeatMode) {
+                        Player.REPEAT_MODE_OFF -> AudioPlayer.RepeatMode.Off
+                        Player.REPEAT_MODE_ONE -> AudioPlayer.RepeatMode.One
+                        Player.REPEAT_MODE_ALL -> AudioPlayer.RepeatMode.All
+                        else -> throw IllegalArgumentException("Unknown repeat mode: $repeatMode")
+                    }
+                )
+            )
+        } else {
+            println("COMMAND_SET_REPEAT_MODE is not available")
+        }
     }
 
     private fun updateShuffleButton() {
