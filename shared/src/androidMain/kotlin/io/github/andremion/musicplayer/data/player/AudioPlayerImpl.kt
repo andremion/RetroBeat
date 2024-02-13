@@ -16,6 +16,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import io.github.andremion.musicplayer.data.service.MusicService
 import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.domain.entity.Playlist
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -39,14 +40,35 @@ internal class AudioPlayerImpl(
         get() = Util.getStringForTime(formatBuilder, formatter, player.currentPosition)
     override val duration: String
         get() = Util.getStringForTime(formatBuilder, formatter, player.duration)
-    override val repeatMode: Int
-        get() = player.repeatMode
 
     private val mutableEvents = MutableSharedFlow<AudioPlayer.Event>(extraBufferCapacity = 1)
     override val events: SharedFlow<AudioPlayer.Event> = mutableEvents.asSharedFlow()
 
     init {
         initializeMediaController()
+    }
+
+    override fun setPlaylist(playlist: Playlist) {
+        if (!controllerFuture.isDone) error("MediaController is not initialized yet")
+
+        player.clearMediaItems()
+        playlist.tracks.forEach { track ->
+            player.addMediaItem(
+                MediaItem.Builder()
+                    .setMediaId(track.id)
+                    .setUri(track.uri)
+                    .setMediaMetadata(
+                        MediaMetadata.Builder()
+                            .setTitle(track.title)
+                            .setArtist(track.artist)
+                            .setAlbumTitle(track.album.title)
+                            .setArtworkUri(Uri.parse(track.album.art))
+                            .build()
+                    )
+                    .build()
+            )
+        }
+        player.prepare()
     }
 
     override fun play() {
@@ -80,7 +102,7 @@ internal class AudioPlayerImpl(
         controllerFuture.addListener(
             {
                 controllerFuture.get().apply {
-                    addListener(MediaControllerListener(this, mutableEvents))
+                    addListener(MediaControllerListener(context, this, mutableEvents))
                     onMediaControllerInitialized()
                 }
             },
@@ -88,30 +110,8 @@ internal class AudioPlayerImpl(
         )
     }
 
-    /**
-     * You shouldn't perform these steps before the app is in the foreground.
-     * If your player is in an Activity or Fragment,
-     * this means preparing the player in the onStart() lifecycle method on API level 24 and higher
-     * or the onResume() lifecycle method on API level 23 and below.
-     * For a player that's in a Service, you can prepare it in onCreate().
-     */
     private fun onMediaControllerInitialized() {
-        player.setMediaItem(
-            MediaItem.Builder()
-                .setMediaId("1644464022")
-                .setUri("https://cdns-preview-d.dzcdn.net/stream/c-ddf3ecfe031b0e38be1f7cef597d6af1-7.mp3")
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle("Calm Down")
-                        .setArtist("Rema")
-                        .setAlbumTitle("Calm Down")
-                        .setArtworkUri(Uri.parse("https://e-cdns-images.dzcdn.net/images/cover/3071378af24d789b8fc69e95162041e4/250x250-000000-80-0-0.jpg"))
-                        .build()
-                )
-                .build()
-        )
-        player.prepare()
-        player.play()
+        mutableEvents.tryEmit(AudioPlayer.Event.PlayerInitialized)
     }
 
     private fun releaseMediaController() {

@@ -6,7 +6,10 @@ import org.koin.dsl.module
 object PresentationModule {
     val module = module {
         factory {
-            PlayerViewModel(audioPlayer = get())
+            PlayerViewModel(
+                repository = get(),
+                audioPlayer = get()
+            )
         }
     }
 }

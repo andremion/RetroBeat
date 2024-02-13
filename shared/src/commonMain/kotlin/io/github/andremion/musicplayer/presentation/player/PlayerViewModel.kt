@@ -1,6 +1,7 @@
 package io.github.andremion.musicplayer.presentation.player
 
 import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.domain.MusicRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,8 +15,15 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
 class PlayerViewModel(
+    repository: MusicRepository,
     private val audioPlayer: AudioPlayer
 ) : ViewModel() {
+
+    private val playlist = repository.getPlaylist().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null
+    )
 
     private val mutableState = MutableStateFlow(PlayerUiState())
     val uiState = mutableState.stateIn(
@@ -27,8 +35,30 @@ class PlayerViewModel(
     private val updateProgressJob: Job? = null
 
     init {
+        playlist.launchIn(viewModelScope)
+
         audioPlayer.events.onEach { event ->
             when (event) {
+                AudioPlayer.Event.PlayerInitialized -> {
+                    mutableState.update { state ->
+                        state.copy(
+                            playlist = playlist.value
+                        )
+                    }
+                    playlist.value?.let(audioPlayer::setPlaylist)
+                }
+
+                is AudioPlayer.Event.PlaylistChanged -> {
+                    mutableState.update { state ->
+                        state.copy(
+                            currentTrack = event.currentTrack,
+                            playlist = state.playlist?.copy(
+                                tracks = event.tracks
+                            )
+                        )
+                    }
+                }
+
                 is AudioPlayer.Event.IsPlayingChanged -> {
                     mutableState.update { state ->
                         state.copy(

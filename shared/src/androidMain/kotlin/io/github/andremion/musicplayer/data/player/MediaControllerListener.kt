@@ -1,16 +1,21 @@
 package io.github.andremion.musicplayer.data.player
 
+import android.content.Context
 import androidx.annotation.OptIn
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Player.RepeatMode
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.session.MediaController
 import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.domain.entity.Music
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.util.Formatter
 import java.util.Locale
 
-class MediaControllerListener(
+internal class MediaControllerListener(
+    context: Context,
     private val mediaController: MediaController,
     private val mutableEvents: MutableSharedFlow<AudioPlayer.Event>
 ) : Player.Listener {
@@ -18,10 +23,20 @@ class MediaControllerListener(
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
 
+    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+        updatePlaylist()
+    }
+
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        mutableEvents.tryEmit(
-            AudioPlayer.Event.IsPlayingChanged(isPlaying)
-        )
+        updateIsPlaying(isPlaying)
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        updateProgress()
+    }
+
+    override fun onRepeatModeChanged(@RepeatMode repeatMode: Int) {
+        updateRepeatModeButton()
     }
 
     @OptIn(UnstableApi::class)
@@ -42,14 +57,14 @@ class MediaControllerListener(
                 Player.EVENT_IS_PLAYING_CHANGED
             )
         ) {
-            updateProgress()
+//            updateProgress()
         }
         if (events.containsAny(
                 Player.EVENT_REPEAT_MODE_CHANGED,
                 Player.EVENT_AVAILABLE_COMMANDS_CHANGED
             )
         ) {
-            updateRepeatModeButton()
+//            updateRepeatModeButton()
         }
         if (events.containsAny(
                 Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
@@ -90,7 +105,7 @@ class MediaControllerListener(
                 Player.EVENT_AVAILABLE_COMMANDS_CHANGED
             )
         ) {
-            updateTrackLists()
+//            updateTrackList()
         }
     }
 
@@ -101,14 +116,53 @@ class MediaControllerListener(
             .also { println("Player.Events=$it") }
     }
 
-    private fun updatePlayPauseButton() {
-        // Returns whether a play button should be presented on a UI element for playback control.
-        // If false, a pause button should be shown instead.
-        val shouldShowPlayButton = Util.shouldShowPlayButton(mediaController)
-        println("shouldShowPlayButton=$shouldShowPlayButton")
-        mutableEvents.tryEmit(
-            AudioPlayer.Event.IsPlayingChanged(isPlaying = !shouldShowPlayButton)
-        )
+    private fun updatePlaylist() {
+        if (
+            mediaController.isCommandAvailable(Player.COMMAND_GET_CURRENT_MEDIA_ITEM) &&
+            mediaController.isCommandAvailable(Player.COMMAND_GET_METADATA)
+        ) {
+            with(mediaController.currentMediaItem!!) {
+                with(mediaController.mediaMetadata) {
+                    mutableEvents.tryEmit(
+                        AudioPlayer.Event.PlaylistChanged(
+                            currentTrack = Music(
+                                id = mediaId,
+                                uri = localConfiguration?.uri.toString(),
+                                title = title.toString(),
+                                artist = artist.toString(),
+                                album = Music.Album(
+                                    title = albumTitle.toString(),
+                                    art = artworkUri.toString()
+                                )
+                            ),
+                            tracks = (0 until mediaController.mediaItemCount).map { i ->
+                                val mediaItem = mediaController.getMediaItemAt(i)
+                                Music(
+                                    id = mediaItem.mediaId,
+                                    uri = mediaItem.localConfiguration?.uri.toString(),
+                                    title = mediaItem.mediaMetadata.title.toString(),
+                                    artist = mediaItem.mediaMetadata.artist.toString(),
+                                    album = Music.Album(
+                                        title = mediaItem.mediaMetadata.albumTitle.toString(),
+                                        art = mediaItem.mediaMetadata.artworkUri.toString()
+                                    )
+                                )
+                            }
+                        )
+                    )
+                }
+            }
+        } else {
+            println("COMMAND_GET_METADATA is not available")
+        }
+    }
+
+    private fun updateIsPlaying(isPlaying: Boolean) {
+        if (mediaController.isCommandAvailable(Player.COMMAND_PLAY_PAUSE)) {
+            mutableEvents.tryEmit(AudioPlayer.Event.IsPlayingChanged(isPlaying))
+        } else {
+            println("COMMAND_PLAY_PAUSE is not available")
+        }
     }
 
     @OptIn(UnstableApi::class)
@@ -165,10 +219,6 @@ class MediaControllerListener(
     }
 
     private fun updatePlaybackSpeedList() {
-        // TODO("Not yet implemented")
-    }
-
-    private fun updateTrackLists() {
         // TODO("Not yet implemented")
     }
 }

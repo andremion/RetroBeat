@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
@@ -42,7 +44,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.domain.entity.Music
+import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
 import io.github.andremion.musicplayer.presentation.player.PlayerUiState
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
@@ -65,7 +70,6 @@ private fun ScreenContent(
     uiState: PlayerUiState,
     onUiEvent: (PlayerUiEvent) -> Unit
 ) {
-    println("$uiState")
     SceneRoot {
         Box(
             modifier = Modifier
@@ -82,7 +86,7 @@ private fun ScreenContent(
             val cover = rememberMovableContent { modifier ->
                 MusicCover(
                     modifier = modifier.animateBounds(),
-                    uri = "https://e-cdns-images.dzcdn.net/images/cover/3071378af24d789b8fc69e95162041e4/500x500-000000-80-0-0.jpg",
+                    uri = uiState.currentTrack?.album?.art.toString(),
                     transition = sceneTransition,
                     rotate = uiState.player == PlayerUiState.Player.Playing,
                     onRotationEnd = { onUiEvent(PlayerUiEvent.CoverRotationEnd) }
@@ -120,12 +124,12 @@ private fun ScreenContent(
                     modifier = modifier.animateBounds(),
                 ) {
                     Text(
-                        text = "Artist",
+                        text = uiState.currentTrack?.artist.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = " - Title",
+                        text = " - " + uiState.currentTrack?.title.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -158,12 +162,13 @@ private fun ScreenContent(
                 )
             }
 
-            SlideFromBottom(
-                modifier = Modifier
-                    .padding(top = CoverHeight),
-                visible = !isPlaying,
-            ) {
-                Playlist(Modifier)
+            uiState.playlist?.let { playlist ->
+                SlideFromBottom(
+                    modifier = Modifier.padding(top = CoverHeight),
+                    visible = !isPlaying
+                ) {
+                    Playlist(playlist)
+                }
             }
 
             Fade(
@@ -334,9 +339,8 @@ private val PlayButtonSize = 56.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Playlist(modifier: Modifier) {
+private fun Playlist(playlist: Playlist) {
     Scaffold(
-        modifier = modifier,
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
@@ -344,18 +348,19 @@ private fun Playlist(modifier: Modifier) {
                 title = {
                     Column {
                         Text(
-                            text = "My favourite",
-                            style = MaterialTheme.typography.titleSmall,
+                            text = playlist.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
                         )
                         Text(
-                            text = "128 songs",
+                            text = "${playlist.tracks.size} tracks",
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }
                 },
                 actions = {
                     IconButton(
-                        modifier = modifier.padding(end = 16.dp),
+                        modifier = Modifier.padding(end = 16.dp),
                         onClick = {
 
                         }
@@ -372,17 +377,30 @@ private fun Playlist(modifier: Modifier) {
         LazyColumn(
             modifier = Modifier.padding(innerPadding),
         ) {
-            items(10) { item ->
-                Text(
+            items(
+                items = playlist.tracks,
+                key = Music::id
+            ) { music ->
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
                         .clickable {
 
                         }
                         .padding(16.dp),
-                    text = "Song $item",
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    AsyncImage(
+                        modifier = Modifier
+                            .size(56.dp),
+                        model = music.album.art,
+                        contentDescription = "Album art",
+                    )
+                    Text(
+                        text = music.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
             }
         }
     }
