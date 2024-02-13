@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -33,8 +32,9 @@ private const val FULL_ANGLE = 360f
 fun MusicCover(
     modifier: Modifier,
     uri: String,
-    rotate: Boolean,
     transition: Float,
+    rotate: Boolean,
+    onRotationEnd: () -> Unit = {}
 ) {
     val rotation by rememberInfiniteTransition().animateFloat(
         label = "rotation",
@@ -53,9 +53,10 @@ fun MusicCover(
     LaunchedEffect(rotate) {
         // Choose the shortest distance to the 0 rotation
         val target = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
-        if (!rotate && rotation != target) {
+        if (!rotate) {
             endRotationAnimation = Animatable(rotation)
-            launch { endRotationAnimation.animateTo(target, animationSpec = tween(1000)) }
+            endRotationAnimation.animateTo(target)
+            onRotationEnd()
         }
     }
 
