@@ -22,8 +22,8 @@ internal class MusicRepositoryImpl : MusicRepository {
                         artist = "Rema",
                         album = Music.Album(
                             title = "Calm Down",
-                            art = "https://api.deezer.com/album/292908332/image"
-                        )
+                            art = "https://e-cdns-images.dzcdn.net/images/cover/3071378af24d789b8fc69e95162041e4/500x500-000000-80-0-0.jpg"
+                        ),
                     ),
                     Music(
                         id = "1881003417",
@@ -32,8 +32,8 @@ internal class MusicRepositoryImpl : MusicRepository {
                         artist = "Ayra Starr",
                         album = Music.Album(
                             title = "Rush",
-                            art = "https://api.deezer.com/album/349702977/image"
-                        )
+                            art = "https://e-cdns-images.dzcdn.net/images/cover/a73bed954d61b52564118ac926925d76/500x500-000000-80-0-0.jpg"
+                        ),
                     ),
                     Music(
                         id = "2210576197",
@@ -42,8 +42,8 @@ internal class MusicRepositoryImpl : MusicRepository {
                         artist = "Fifty Fifty",
                         album = Music.Album(
                             title = "The Beginning: Cupid",
-                            art = "https://api.deezer.com/album/422366867/image"
-                        )
+                            art = "https://e-cdns-images.dzcdn.net/images/cover/d4fd8cda9ed75643f459f4c8406f0070/500x500-000000-80-0-0.jpg"
+                        ),
                     ),
                     Music(
                         id = "2299840635",
@@ -52,8 +52,8 @@ internal class MusicRepositoryImpl : MusicRepository {
                         artist = "Dua Lipa",
                         album = Music.Album(
                             title = "Dance The Night (From Barbie The Album)",
-                            art = "https://api.deezer.com/album/446073025/image"
-                        )
+                            art = "https://e-cdns-images.dzcdn.net/images/cover/67bbf9fc8e49fc8d373c91963061572b/500x500-000000-80-0-0.jpg"
+                        ),
                     ),
                     Music(
                         id = "737967292",
@@ -62,8 +62,8 @@ internal class MusicRepositoryImpl : MusicRepository {
                         artist = "Taylor Swift",
                         album = Music.Album(
                             title = "Lover",
-                            art = "https://api.deezer.com/album/108447472/image"
-                        )
+                            art = "https://e-cdns-images.dzcdn.net/images/cover/6111c5ab9729c8eac47883e4e50e9cf8/500x500-000000-80-0-0.jpg"
+                        ),
                     ),
                 )
             )
