@@ -9,65 +9,48 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.common.util.Util
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import io.github.andremion.musicplayer.data.service.MusicService
 import io.github.andremion.musicplayer.domain.AudioPlayer
-import io.github.andremion.musicplayer.domain.entity.Playlist
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import java.util.Formatter
-import java.util.Locale
+import kotlinx.coroutines.flow.asStateFlow
 
-@OptIn(UnstableApi::class)
 internal class AudioPlayerImpl(
     private val context: Context
 ) : AudioPlayer {
 
     private lateinit var controllerFuture: ListenableFuture<MediaController>
-    private val formatBuilder = StringBuilder()
-    private val formatter = Formatter(formatBuilder, Locale.getDefault())
+    private val listener: MediaControllerListener by lazy {
+        MediaControllerListener(controllerFuture.get(), mutableState, mutableTrack)
+    }
     private val player: Player
         get() = controllerFuture.get()
 
-    override val position: Float
-        get() = (player.currentPosition / player.duration.toFloat()).coerceIn(0f, 1f)
-    override val time: String
-        get() = Util.getStringForTime(formatBuilder, formatter, player.currentPosition)
-    override val duration: String
-        get() = Util.getStringForTime(formatBuilder, formatter, player.duration)
+    private val mutableState = MutableStateFlow(AudioPlayer.State())
+    override val state: StateFlow<AudioPlayer.State> = mutableState.asStateFlow()
 
     private val mutableEvents = MutableSharedFlow<AudioPlayer.Event>(extraBufferCapacity = 1)
     override val events: SharedFlow<AudioPlayer.Event> = mutableEvents.asSharedFlow()
+
+    private val mutableTrack = MutableStateFlow<AudioPlayer.Track?>(null)
+    override val currentTrack: StateFlow<AudioPlayer.Track?> = mutableTrack.asStateFlow()
 
     init {
         initializeMediaController()
     }
 
-    override fun setPlaylist(playlist: Playlist) {
+    override fun setTracks(tracks: List<AudioPlayer.Track>) {
         if (!controllerFuture.isDone) error("MediaController is not initialized yet")
 
         player.clearMediaItems()
-        playlist.tracks.forEach { track ->
-            player.addMediaItem(
-                MediaItem.Builder()
-                    .setMediaId(track.id)
-                    .setUri(track.uri)
-                    .setMediaMetadata(
-                        MediaMetadata.Builder()
-                            .setTitle(track.title)
-                            .setArtist(track.artist)
-                            .setAlbumTitle(track.album.title)
-                            .setArtworkUri(Uri.parse(track.album.art))
-                            .build()
-                    )
-                    .build()
-            )
-        }
+        player.addMediaItems(tracks.map(AudioPlayer.Track::toMediaItem))
         player.prepare()
     }
 
@@ -75,10 +58,15 @@ internal class AudioPlayerImpl(
         player.play()
     }
 
+    override fun updateProgress() {
+        listener.updateProgress()
+    }
+
     override fun pause() {
         player.pause()
     }
 
+    @OptIn(UnstableApi::class)
     override fun toggleRepeatMode() {
         if (player.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {
             player.repeatMode = RepeatModeUtil.getNextRepeatMode(
@@ -101,10 +89,8 @@ internal class AudioPlayerImpl(
         controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
         controllerFuture.addListener(
             {
-                controllerFuture.get().apply {
-                    addListener(MediaControllerListener(context, this, mutableEvents))
-                    onMediaControllerInitialized()
-                }
+                controllerFuture.get().addListener(listener)
+                onMediaControllerInitialized()
             },
             MoreExecutors.directExecutor()
         )
@@ -118,3 +104,17 @@ internal class AudioPlayerImpl(
         MediaController.releaseFuture(controllerFuture)
     }
 }
+
+private fun AudioPlayer.Track.toMediaItem(): MediaItem =
+    MediaItem.Builder()
+        .setMediaId(id)
+        .setUri(uri)
+        .setMediaMetadata(
+            MediaMetadata.Builder()
+                .setTitle(metadata.title)
+                .setArtist(metadata.artist)
+                .setAlbumTitle(metadata.albumTitle)
+                .setArtworkUri(Uri.parse(metadata.artworkUri))
+                .build()
+        )
+        .build()

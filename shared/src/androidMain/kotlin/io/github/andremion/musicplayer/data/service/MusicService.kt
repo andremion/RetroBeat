@@ -20,7 +20,6 @@ class MusicService : MediaSessionService() {
     // for example to integrate with system media controls on mobile and large screen devices.
     private var mediaSession: MediaSession? = null
 
-
     @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
@@ -35,10 +34,10 @@ class MusicService : MediaSessionService() {
 
     // Give other clients access to the media session.
     // Return a MediaSession to accept the connection request, or return null to reject the request.
-    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
     // We may wish to restrict access to the media session depending on the client,
     // For example, give access to a Bluetooth headset (com.android.bluetooth)
-        // but restrict access to Android Auto.
+    // but restrict access to Android Auto.
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? =
         mediaSession
 
     // The user dismissed the app from the recent tasks

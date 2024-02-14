@@ -14,7 +14,7 @@ internal class MusicRepositoryImpl : MusicRepository {
                 id = "4884747864",
                 title = "Summer Hits",
                 description = "The perfect soundtrack to an endless sunny summer",
-                tracks = listOf(
+                musics = listOf(
                     Music(
                         id = "1644464022",
                         uri = "https://cdns-preview-d.dzcdn.net/stream/c-ddf3ecfe031b0e38be1f7cef597d6af1-7.mp3",

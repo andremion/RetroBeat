@@ -40,7 +40,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -65,6 +69,13 @@ fun PlayerScreen() {
     ScreenContent(uiState, viewModel::onUiEvent)
 }
 
+private enum class PlayingState {
+    Idle, Playing, Pausing, Paused;
+
+    val isPlaying: Boolean
+        get() = this == Playing || this == Pausing
+}
+
 @Composable
 private fun ScreenContent(
     uiState: PlayerUiState,
@@ -77,7 +88,17 @@ private fun ScreenContent(
                 .fillMaxSize(),
         ) {
 
-            val isPlaying = uiState.player.isPlaying
+            var playingState by remember { mutableStateOf(PlayingState.Idle) }
+            LaunchedEffect(uiState.playerState.isPlaying) {
+                if (uiState.playerState.isPlaying) {
+                    playingState = PlayingState.Playing
+                } else {
+                    if (playingState != PlayingState.Idle) {
+                        playingState = PlayingState.Pausing
+                    }
+                }
+            }
+            val isPlaying = playingState.isPlaying
 
             val sceneTransition by animateFloatAsState(
                 targetValue = if (isPlaying) 1f else 0f,
@@ -86,10 +107,10 @@ private fun ScreenContent(
             val cover = rememberMovableContent { modifier ->
                 MusicCover(
                     modifier = modifier.animateBounds(),
-                    uri = uiState.currentTrack?.album?.art.toString(),
+                    uri = uiState.currentTrack?.metadata?.artworkUri.toString(),
                     transition = sceneTransition,
-                    rotate = uiState.player == PlayerUiState.Player.Playing,
-                    onRotationEnd = { onUiEvent(PlayerUiEvent.CoverRotationEnd) }
+                    rotate = playingState == PlayingState.Playing,
+                    onRotationEnd = { playingState = PlayingState.Paused }
                 )
             }
 
@@ -120,18 +141,21 @@ private fun ScreenContent(
             }
 
             val headline = rememberMovableContent { modifier ->
-                Row(
+                Column(
                     modifier = modifier.animateBounds(),
+                    horizontalAlignment = if (isPlaying) Alignment.CenterHorizontally else Alignment.Start,
                 ) {
                     Text(
-                        text = uiState.currentTrack?.artist.toString(),
+                        text = uiState.currentTrack?.metadata?.artist.toString(),
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
                     )
                     Text(
-                        text = " - " + uiState.currentTrack?.title.toString(),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = uiState.currentTrack?.metadata?.title.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
                     )
                 }
             }
@@ -139,7 +163,7 @@ private fun ScreenContent(
             val time = rememberMovableContent { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = uiState.time,
+                    text = uiState.playerState.time,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -148,7 +172,7 @@ private fun ScreenContent(
             val duration = rememberMovableContent { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = uiState.duration,
+                    text = uiState.playerState.duration,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -157,7 +181,7 @@ private fun ScreenContent(
             val timeBar = rememberMovableContent { modifier ->
                 TimeBar(
                     modifier = modifier.animateBounds(),
-                    position = uiState.position,
+                    position = uiState.playerState.position,
                     transition = sceneTransition
                 )
             }
@@ -179,16 +203,16 @@ private fun ScreenContent(
             ) {
                 Row {
                     IconToggleButton(
-                        checked = uiState.repeatMode != AudioPlayer.RepeatMode.Off,
+                        checked = uiState.playerState.repeatMode != AudioPlayer.RepeatMode.Off,
                         onCheckedChange = { onUiEvent(PlayerUiEvent.RepeatClick) }
                     ) {
                         Icon(
-                            imageVector = when (uiState.repeatMode) {
+                            imageVector = when (uiState.playerState.repeatMode) {
                                 AudioPlayer.RepeatMode.Off -> Icons.Rounded.Repeat
                                 AudioPlayer.RepeatMode.One -> Icons.Rounded.RepeatOne
                                 AudioPlayer.RepeatMode.All -> Icons.Rounded.Repeat
                             },
-                            contentDescription = when (uiState.repeatMode) {
+                            contentDescription = when (uiState.playerState.repeatMode) {
                                 AudioPlayer.RepeatMode.Off -> "Repeat off"
                                 AudioPlayer.RepeatMode.One -> "Repeat one"
                                 AudioPlayer.RepeatMode.All -> "Repeat all"
@@ -353,7 +377,7 @@ private fun Playlist(playlist: Playlist) {
                             maxLines = 1,
                         )
                         Text(
-                            text = "${playlist.tracks.size} tracks",
+                            text = "${playlist.musics.size} tracks",
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }
@@ -378,7 +402,7 @@ private fun Playlist(playlist: Playlist) {
             modifier = Modifier.padding(innerPadding),
         ) {
             items(
-                items = playlist.tracks,
+                items = playlist.musics,
                 key = Music::id
             ) { music ->
                 Row(

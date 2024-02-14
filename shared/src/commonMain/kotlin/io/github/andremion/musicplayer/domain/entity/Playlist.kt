@@ -4,5 +4,5 @@ data class Playlist(
     val id: String,
     val title: String,
     val description: String,
-    val tracks: List<Music>
+    val musics: List<Music>
 )

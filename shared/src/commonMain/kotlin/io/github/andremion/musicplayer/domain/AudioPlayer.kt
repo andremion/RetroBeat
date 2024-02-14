@@ -1,45 +1,44 @@
 package io.github.andremion.musicplayer.domain
 
-import io.github.andremion.musicplayer.domain.entity.Music
-import io.github.andremion.musicplayer.domain.entity.Playlist
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 
 interface AudioPlayer {
 
-    val position: Float
-    val time: String
-    val duration: String
-
+    val state: StateFlow<State>
     val events: SharedFlow<Event>
+    val currentTrack: StateFlow<Track?>
 
-    fun setPlaylist(playlist: Playlist)
+    fun setTracks(tracks: List<Track>)
     fun play()
+    fun updateProgress()
     fun pause()
     fun toggleRepeatMode()
     fun release()
 
+    data class State(
+        val isPlaying: Boolean = false,
+        val position: Float = -0f,
+        val time: String = "",
+        val duration: String = "",
+        val repeatMode: RepeatMode = RepeatMode.Off,
+    )
+
+    data class Track(
+        val id: String,
+        val uri: String,
+        val metadata: Metadata,
+    ) {
+        data class Metadata(
+            val title: String,
+            val artist: String,
+            val albumTitle: String,
+            val artworkUri: String,
+        )
+    }
+
     sealed interface Event {
-
         data object PlayerInitialized : Event
-
-        data class PlaylistChanged(
-            val currentTrack: Music,
-            val tracks: List<Music>
-        ) : Event
-
-        data class IsPlayingChanged(
-            val isPlaying: Boolean
-        ) : Event
-
-        data class ProgressChanged(
-            val position: Float,
-            val time: String,
-            val duration: String,
-        ) : Event
-
-        data class RepeatModeChanged(
-            val mode: RepeatMode
-        ) : Event
     }
 
     enum class RepeatMode { Off, One, All }

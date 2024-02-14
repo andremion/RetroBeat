@@ -1,188 +1,114 @@
 package io.github.andremion.musicplayer.data.player
 
-import android.content.Context
 import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Player.RepeatMode
+import androidx.media3.common.Player.State
+import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
 import androidx.media3.session.MediaController
 import io.github.andremion.musicplayer.domain.AudioPlayer
-import io.github.andremion.musicplayer.domain.entity.Music
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import java.util.Formatter
 import java.util.Locale
 
 internal class MediaControllerListener(
-    context: Context,
     private val mediaController: MediaController,
-    private val mutableEvents: MutableSharedFlow<AudioPlayer.Event>
+    private val mutableState: MutableStateFlow<AudioPlayer.State>,
+    private val mutableTrack: MutableStateFlow<AudioPlayer.Track?>
 ) : Player.Listener {
 
     private val formatBuilder = StringBuilder()
     private val formatter = Formatter(formatBuilder, Locale.getDefault())
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-        updatePlaylist()
+        updateCurrentTrack()
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         updateIsPlaying(isPlaying)
+        updateProgress()
     }
 
-    override fun onPlaybackStateChanged(playbackState: Int) {
+    override fun onPlaybackStateChanged(@State playbackState: Int) {
         updateProgress()
+    }
+
+    override fun onTimelineChanged(timeline: Timeline, @Player.TimelineChangeReason reason: Int) {
+        updateTimeline()
     }
 
     override fun onRepeatModeChanged(@RepeatMode repeatMode: Int) {
         updateRepeatModeButton()
     }
 
-    @OptIn(UnstableApi::class)
     override fun onEvents(player: Player, events: Player.Events) {
         log(events)
-        if (events.containsAny(
-                Player.EVENT_PLAYBACK_STATE_CHANGED,
-                Player.EVENT_PLAY_WHEN_READY_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-//            updatePlayPauseButton()
-        }
-        if (events.containsAny(
-                Player.EVENT_PLAYBACK_STATE_CHANGED,
-                Player.EVENT_PLAY_WHEN_READY_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED,
-                Player.EVENT_IS_PLAYING_CHANGED
-            )
-        ) {
-//            updateProgress()
-        }
-        if (events.containsAny(
-                Player.EVENT_REPEAT_MODE_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-//            updateRepeatModeButton()
-        }
-        if (events.containsAny(
-                Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-            updateShuffleButton()
-        }
-        if (events.containsAny(
-                Player.EVENT_REPEAT_MODE_CHANGED,
-                Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED,
-                Player.EVENT_POSITION_DISCONTINUITY,
-                Player.EVENT_TIMELINE_CHANGED,
-                Player.EVENT_SEEK_BACK_INCREMENT_CHANGED,
-                Player.EVENT_SEEK_FORWARD_INCREMENT_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-            updateNavigation()
-        }
-        if (events.containsAny(
-                Player.EVENT_POSITION_DISCONTINUITY,
-                Player.EVENT_TIMELINE_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-            updateTimeline()
-        }
-        if (events.containsAny(
-                Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-            updatePlaybackSpeedList()
-        }
-        if (events.containsAny(
-                Player.EVENT_TRACKS_CHANGED,
-                Player.EVENT_AVAILABLE_COMMANDS_CHANGED
-            )
-        ) {
-//            updateTrackList()
-        }
     }
 
-    private fun log(events: Player.Events) {
-        (0 until events.size())
-            .map { events[it] }
-            .joinToString(",")
-            .also { println("Player.Events=$it") }
-    }
-
-    private fun updatePlaylist() {
+    private fun updateCurrentTrack() {
         if (
             mediaController.isCommandAvailable(Player.COMMAND_GET_CURRENT_MEDIA_ITEM) &&
             mediaController.isCommandAvailable(Player.COMMAND_GET_METADATA)
         ) {
-            with(mediaController.currentMediaItem!!) {
-                with(mediaController.mediaMetadata) {
-                    mutableEvents.tryEmit(
-                        AudioPlayer.Event.PlaylistChanged(
-                            currentTrack = Music(
-                                id = mediaId,
-                                uri = localConfiguration?.uri.toString(),
-                                title = title.toString(),
-                                artist = artist.toString(),
-                                album = Music.Album(
-                                    title = albumTitle.toString(),
-                                    art = artworkUri.toString()
-                                )
-                            ),
-                            tracks = (0 until mediaController.mediaItemCount).map { i ->
-                                val mediaItem = mediaController.getMediaItemAt(i)
-                                Music(
-                                    id = mediaItem.mediaId,
-                                    uri = mediaItem.localConfiguration?.uri.toString(),
-                                    title = mediaItem.mediaMetadata.title.toString(),
-                                    artist = mediaItem.mediaMetadata.artist.toString(),
-                                    album = Music.Album(
-                                        title = mediaItem.mediaMetadata.albumTitle.toString(),
-                                        art = mediaItem.mediaMetadata.artworkUri.toString()
-                                    )
-                                )
-                            }
-                        )
-                    )
+            with(requireNotNull(mediaController.currentMediaItem)) {
+                mutableTrack.update { track ->
+                    updateTrack(track) ?: createTrack()
                 }
             }
         } else {
-            println("COMMAND_GET_METADATA is not available")
+            println("COMMAND_GET_CURRENT_MEDIA_ITEM or COMMAND_GET_METADATA is not available")
         }
     }
 
+    private fun MediaItem.updateTrack(track: AudioPlayer.Track?): AudioPlayer.Track? =
+        track?.copy(
+            id = mediaId,
+            uri = localConfiguration?.uri.toString(),
+            metadata = track.metadata.copy(
+                title = mediaMetadata.title.toString(),
+                artist = mediaMetadata.artist.toString(),
+                albumTitle = mediaMetadata.albumTitle.toString(),
+                artworkUri = mediaMetadata.artworkUri.toString(),
+            )
+        )
+
+    private fun MediaItem.createTrack(): AudioPlayer.Track =
+        AudioPlayer.Track(
+            id = mediaId,
+            uri = localConfiguration?.uri.toString(),
+            metadata = AudioPlayer.Track.Metadata(
+                title = mediaMetadata.title.toString(),
+                artist = mediaMetadata.artist.toString(),
+                albumTitle = mediaMetadata.albumTitle.toString(),
+                artworkUri = mediaMetadata.artworkUri.toString(),
+            )
+        )
+
     private fun updateIsPlaying(isPlaying: Boolean) {
         if (mediaController.isCommandAvailable(Player.COMMAND_PLAY_PAUSE)) {
-            mutableEvents.tryEmit(AudioPlayer.Event.IsPlayingChanged(isPlaying))
+            mutableState.update { state ->
+                state.copy(isPlaying = isPlaying)
+            }
         } else {
             println("COMMAND_PLAY_PAUSE is not available")
         }
     }
 
     @OptIn(UnstableApi::class)
-    private fun updateProgress() {
+    fun updateProgress() {
         if (mediaController.isCommandAvailable(Player.COMMAND_GET_CURRENT_MEDIA_ITEM)) {
-            mutableEvents.tryEmit(
-                AudioPlayer.Event.ProgressChanged(
-                    time = Util.getStringForTime(
-                        formatBuilder,
-                        formatter,
-                        mediaController.currentPosition
-                    ),
-                    duration = Util.getStringForTime(
-                        formatBuilder,
-                        formatter,
-                        mediaController.duration
-                    ),
-                    position = (mediaController.currentPosition / mediaController.duration.toFloat()).coerceIn(0f, 1f)
+            mutableState.update { state ->
+                state.copy(
+                    position = (mediaController.currentPosition / mediaController.duration.toFloat()).coerceIn(0f, 1f),
+                    time = Util.getStringForTime(formatBuilder, formatter, mediaController.currentPosition),
+                    duration = Util.getStringForTime(formatBuilder, formatter, mediaController.duration)
                 )
-            )
+            }
         } else {
             println("COMMAND_GET_CURRENT_MEDIA_ITEM is not available")
         }
@@ -190,35 +116,30 @@ internal class MediaControllerListener(
 
     private fun updateRepeatModeButton() {
         if (mediaController.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {
-            val repeatMode = mediaController.repeatMode
-            mutableEvents.tryEmit(
-                AudioPlayer.Event.RepeatModeChanged(
-                    when (repeatMode) {
-                        Player.REPEAT_MODE_OFF -> AudioPlayer.RepeatMode.Off
-                        Player.REPEAT_MODE_ONE -> AudioPlayer.RepeatMode.One
-                        Player.REPEAT_MODE_ALL -> AudioPlayer.RepeatMode.All
-                        else -> throw IllegalArgumentException("Unknown repeat mode: $repeatMode")
-                    }
-                )
-            )
+            mutableState.update { state ->
+                state.copy(repeatMode = map(mediaController.repeatMode))
+            }
         } else {
             println("COMMAND_SET_REPEAT_MODE is not available")
         }
     }
 
-    private fun updateShuffleButton() {
-        // TODO("Not yet implemented")
-    }
-
-    private fun updateNavigation() {
-        // TODO("Not yet implemented")
-    }
-
     private fun updateTimeline() {
         updateProgress()
     }
-
-    private fun updatePlaybackSpeedList() {
-        // TODO("Not yet implemented")
-    }
 }
+
+private fun log(events: Player.Events) {
+    (0 until events.size())
+        .map { events[it] }
+        .joinToString(",")
+        .also { println("Player.Events=$it") }
+}
+
+private fun map(@RepeatMode repeatMode: Int): AudioPlayer.RepeatMode =
+    when (repeatMode) {
+        Player.REPEAT_MODE_OFF -> AudioPlayer.RepeatMode.Off
+        Player.REPEAT_MODE_ONE -> AudioPlayer.RepeatMode.One
+        Player.REPEAT_MODE_ALL -> AudioPlayer.RepeatMode.All
+        else -> throw IllegalArgumentException("Unknown repeat mode: $repeatMode")
+    }
