@@ -46,9 +46,9 @@ fun MusicCover(
     var endRotationAnimation by remember { mutableStateOf(Animatable(0f)) }
 
     LaunchedEffect(rotate) {
-        if (!rotate) {
-            // Choose the shortest distance to the 0 rotation
-            val targetAngle = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
+        // Choose the shortest distance to the 0 rotation
+        val targetAngle = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
+        if (!rotate && targetAngle != rotation) {
             endRotationAnimation = Animatable(rotation)
             endRotationAnimation.animateTo(targetAngle, animationSpec = tween(durationMillis = 500))
             onRotationEnd()
