@@ -2,12 +2,10 @@ package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,14 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
@@ -30,15 +24,12 @@ import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,10 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import io.github.andremion.musicplayer.domain.AudioPlayer
-import io.github.andremion.musicplayer.domain.entity.Music
-import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
 import io.github.andremion.musicplayer.presentation.player.PlayerUiState
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
@@ -191,7 +179,10 @@ private fun ScreenContent(
                     modifier = Modifier.padding(top = CoverHeight),
                     visible = !isPlaying
                 ) {
-                    Playlist(playlist)
+                    Playlist(
+                        playlist = playlist,
+                        topBarPaddingTop = PlayButtonSize / 2,
+                    )
                 }
             }
 
@@ -322,7 +313,7 @@ private fun ScreenContent(
                     Column(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
-                            .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f))
+                            .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
                             .padding(
                                 horizontal = 16.dp,
                                 vertical = 8.dp
@@ -355,72 +346,3 @@ private fun ScreenContent(
 
 private val CoverHeight = 256.dp
 private val PlayButtonSize = 56.dp
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Playlist(playlist: Playlist) {
-    Scaffold(
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(top = PlayButtonSize / 2),
-                title = {
-                    Column {
-                        Text(
-                            text = playlist.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                        )
-                        Text(
-                            text = "${playlist.musics.size} tracks",
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        modifier = Modifier.padding(end = 16.dp),
-                        onClick = {
-
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.MoreVert,
-                            contentDescription = "Playlist options",
-                        )
-                    }
-                }
-            )
-        },
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            items(
-                items = playlist.musics,
-                key = Music::id
-            ) { music ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-
-                        }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    AsyncImage(
-                        modifier = Modifier
-                            .size(56.dp),
-                        model = music.album.art,
-                        contentDescription = "Album art",
-                    )
-                    Text(
-                        text = music.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-        }
-    }
-}
