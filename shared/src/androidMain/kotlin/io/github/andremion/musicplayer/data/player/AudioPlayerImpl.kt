@@ -9,6 +9,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.RepeatModeUtil
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
@@ -36,11 +37,11 @@ internal class AudioPlayerImpl(
     private val mutableState = MutableStateFlow(AudioPlayer.State())
     override val state: StateFlow<AudioPlayer.State> = mutableState.asStateFlow()
 
-    private val mutableEvents = MutableSharedFlow<AudioPlayer.Event>(extraBufferCapacity = 1)
-    override val events: SharedFlow<AudioPlayer.Event> = mutableEvents.asSharedFlow()
-
     private val mutableTrack = MutableStateFlow<AudioPlayer.Track?>(null)
     override val currentTrack: StateFlow<AudioPlayer.Track?> = mutableTrack.asStateFlow()
+
+    private val mutableEvents = MutableSharedFlow<AudioPlayer.Event>(extraBufferCapacity = 1)
+    override val events: SharedFlow<AudioPlayer.Event> = mutableEvents.asSharedFlow()
 
     init {
         initializeMediaController()
@@ -55,7 +56,7 @@ internal class AudioPlayerImpl(
     }
 
     override fun play() {
-        player.play()
+        Util.handlePlayButtonAction(player)
     }
 
     override fun updateProgress() {
@@ -63,7 +64,7 @@ internal class AudioPlayerImpl(
     }
 
     override fun pause() {
-        player.pause()
+        Util.handlePauseButtonAction(player)
     }
 
     @OptIn(UnstableApi::class)
@@ -73,6 +74,16 @@ internal class AudioPlayerImpl(
                 /* currentMode = */ player.repeatMode,
                 /* enabledModes = */ RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE or RepeatModeUtil.REPEAT_TOGGLE_MODE_ALL
             )
+        } else {
+            println("COMMAND_SET_REPEAT_MODE is not available")
+        }
+    }
+
+    override fun toggleShuffleMode() {
+        if (player.isCommandAvailable(Player.COMMAND_SET_SHUFFLE_MODE)) {
+            player.shuffleModeEnabled = !player.shuffleModeEnabled
+        } else {
+            println("COMMAND_SET_SHUFFLE_MODE is not available")
         }
     }
 

@@ -30,7 +30,7 @@ internal class MediaControllerListener(
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        updateIsPlaying(isPlaying)
+        updateIsPlaying()
         updateProgress()
     }
 
@@ -43,7 +43,11 @@ internal class MediaControllerListener(
     }
 
     override fun onRepeatModeChanged(@RepeatMode repeatMode: Int) {
-        updateRepeatModeButton()
+        updateRepeatMode()
+    }
+
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        updateShuffleMode()
     }
 
     override fun onEvents(player: Player, events: Player.Events) {
@@ -56,26 +60,12 @@ internal class MediaControllerListener(
             mediaController.isCommandAvailable(Player.COMMAND_GET_METADATA)
         ) {
             with(requireNotNull(mediaController.currentMediaItem)) {
-                mutableTrack.update { track ->
-                    updateTrack(track) ?: createTrack()
-                }
+                mutableTrack.update { createTrack() }
             }
         } else {
             println("COMMAND_GET_CURRENT_MEDIA_ITEM or COMMAND_GET_METADATA is not available")
         }
     }
-
-    private fun MediaItem.updateTrack(track: AudioPlayer.Track?): AudioPlayer.Track? =
-        track?.copy(
-            id = mediaId,
-            uri = localConfiguration?.uri.toString(),
-            metadata = track.metadata.copy(
-                title = mediaMetadata.title.toString(),
-                artist = mediaMetadata.artist.toString(),
-                albumTitle = mediaMetadata.albumTitle.toString(),
-                artworkUri = mediaMetadata.artworkUri.toString(),
-            )
-        )
 
     private fun MediaItem.createTrack(): AudioPlayer.Track =
         AudioPlayer.Track(
@@ -89,10 +79,10 @@ internal class MediaControllerListener(
             )
         )
 
-    private fun updateIsPlaying(isPlaying: Boolean) {
+    private fun updateIsPlaying() {
         if (mediaController.isCommandAvailable(Player.COMMAND_PLAY_PAUSE)) {
             mutableState.update { state ->
-                state.copy(isPlaying = isPlaying)
+                state.copy(isPlaying = mediaController.isPlaying)
             }
         } else {
             println("COMMAND_PLAY_PAUSE is not available")
@@ -114,13 +104,23 @@ internal class MediaControllerListener(
         }
     }
 
-    private fun updateRepeatModeButton() {
+    private fun updateRepeatMode() {
         if (mediaController.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {
             mutableState.update { state ->
                 state.copy(repeatMode = map(mediaController.repeatMode))
             }
         } else {
             println("COMMAND_SET_REPEAT_MODE is not available")
+        }
+    }
+
+    private fun updateShuffleMode() {
+        if (mediaController.isCommandAvailable(Player.COMMAND_SET_SHUFFLE_MODE)) {
+            mutableState.update { state ->
+                state.copy(isShuffleModeOn = mediaController.shuffleModeEnabled)
+            }
+        } else {
+            println("COMMAND_SET_SHUFFLE_MODE is not available")
         }
     }
 

@@ -213,20 +213,23 @@ private fun ScreenContent(
                                 AudioPlayer.RepeatMode.All -> Icons.Rounded.Repeat
                             },
                             contentDescription = when (uiState.playerState.repeatMode) {
-                                AudioPlayer.RepeatMode.Off -> "Repeat off"
-                                AudioPlayer.RepeatMode.One -> "Repeat one"
-                                AudioPlayer.RepeatMode.All -> "Repeat all"
+                                AudioPlayer.RepeatMode.Off -> "Repeat mode off"
+                                AudioPlayer.RepeatMode.One -> "Repeat mode one"
+                                AudioPlayer.RepeatMode.All -> "Repeat mode all"
                             },
                         )
                     }
-                    IconButton(
-                        onClick = {
-
-                        }
+                    IconToggleButton(
+                        checked = uiState.playerState.isShuffleModeOn,
+                        onCheckedChange = { onUiEvent(PlayerUiEvent.ShuffleClick) },
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Shuffle,
-                            contentDescription = "Shuffle",
+                            contentDescription = if (uiState.playerState.isShuffleModeOn) {
+                                "Shuffle mode on"
+                            } else {
+                                "Shuffle mode off"
+                            },
                         )
                     }
                 }

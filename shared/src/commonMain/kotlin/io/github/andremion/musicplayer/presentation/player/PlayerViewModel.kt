@@ -72,6 +72,10 @@ class PlayerViewModel(
             PlayerUiEvent.RepeatClick -> {
                 audioPlayer.toggleRepeatMode()
             }
+
+            PlayerUiEvent.ShuffleClick -> {
+                audioPlayer.toggleShuffleMode()
+            }
         }
     }
 
@@ -79,7 +83,6 @@ class PlayerViewModel(
         updateProgressJob?.cancel()
         audioPlayer.release()
     }
-
 }
 
 private fun List<Music>.toTracks(): List<AudioPlayer.Track> =

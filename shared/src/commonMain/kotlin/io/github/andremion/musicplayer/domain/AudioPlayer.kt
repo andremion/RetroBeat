@@ -6,14 +6,15 @@ import kotlinx.coroutines.flow.StateFlow
 interface AudioPlayer {
 
     val state: StateFlow<State>
-    val events: SharedFlow<Event>
     val currentTrack: StateFlow<Track?>
+    val events: SharedFlow<Event>
 
     fun setTracks(tracks: List<Track>)
     fun play()
     fun updateProgress()
     fun pause()
     fun toggleRepeatMode()
+    fun toggleShuffleMode()
     fun release()
 
     data class State(
@@ -22,6 +23,7 @@ interface AudioPlayer {
         val time: String = "",
         val duration: String = "",
         val repeatMode: RepeatMode = RepeatMode.Off,
+        val isShuffleModeOn: Boolean = false,
     )
 
     data class Track(
