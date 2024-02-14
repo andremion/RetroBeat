@@ -69,6 +69,22 @@ class PlayerViewModel(
                 audioPlayer.pause()
             }
 
+            PlayerUiEvent.SkipToPrevious -> {
+                audioPlayer.skipToPrevious()
+            }
+
+            PlayerUiEvent.SkipToNext -> {
+                audioPlayer.skipToNext()
+            }
+
+            PlayerUiEvent.SeekBackward -> {
+                audioPlayer.seekBackward()
+            }
+
+            PlayerUiEvent.SeekForward -> {
+                audioPlayer.seekForward()
+            }
+
             PlayerUiEvent.RepeatClick -> {
                 audioPlayer.toggleRepeatMode()
             }

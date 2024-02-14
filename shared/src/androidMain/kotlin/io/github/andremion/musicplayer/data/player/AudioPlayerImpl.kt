@@ -67,6 +67,30 @@ internal class AudioPlayerImpl(
         Util.handlePauseButtonAction(player)
     }
 
+    override fun skipToPrevious() {
+        if (player.isCommandAvailable(Player.COMMAND_SEEK_TO_PREVIOUS)) {
+            player.seekToPrevious()
+        }
+    }
+
+    override fun skipToNext() {
+        if (player.isCommandAvailable(Player.COMMAND_SEEK_TO_NEXT)) {
+            player.seekToNext()
+        }
+    }
+
+    override fun seekBackward() {
+        if (player.playbackState != Player.STATE_ENDED && player.isCommandAvailable(Player.COMMAND_SEEK_BACK)) {
+            player.seekBack()
+        }
+    }
+
+    override fun seekForward() {
+        if (player.playbackState != Player.STATE_ENDED && player.isCommandAvailable(Player.COMMAND_SEEK_FORWARD)) {
+            player.seekForward()
+        }
+    }
+
     @OptIn(UnstableApi::class)
     override fun toggleRepeatMode() {
         if (player.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {

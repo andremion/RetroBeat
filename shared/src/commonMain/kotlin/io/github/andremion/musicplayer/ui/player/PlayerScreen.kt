@@ -247,9 +247,7 @@ private fun ScreenContent(
                     horizontalArrangement = Arrangement.SpaceAround,
                 ) {
                     IconButton(
-                        onClick = {
-
-                        }
+                        onClick = { onUiEvent(PlayerUiEvent.SkipToPrevious) }
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.SkipPrevious,
@@ -257,29 +255,23 @@ private fun ScreenContent(
                         )
                     }
                     IconButton(
-                        onClick = {
-
-                        }
+                        onClick = { onUiEvent(PlayerUiEvent.SeekBackward) }
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.FastRewind,
-                            contentDescription = "Fast rewind",
+                            contentDescription = "Seek backward",
                         )
                     }
                     IconButton(
-                        onClick = {
-
-                        }
+                        onClick = { onUiEvent(PlayerUiEvent.SeekForward) }
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.FastForward,
-                            contentDescription = "Fast forward",
+                            contentDescription = "Seek forward",
                         )
                     }
                     IconButton(
-                        onClick = {
-
-                        }
+                        onClick = { onUiEvent(PlayerUiEvent.SkipToNext) }
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.SkipNext,
