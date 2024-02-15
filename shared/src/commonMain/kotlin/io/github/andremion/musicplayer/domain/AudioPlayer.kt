@@ -19,7 +19,7 @@ interface AudioPlayer {
     fun seekForward()
     fun toggleRepeatMode()
     fun toggleShuffleMode()
-    fun release()
+    fun releasePlayer()
 
     data class State(
         val isPlaying: Boolean = false,

@@ -97,7 +97,7 @@ class PlayerViewModel(
 
     override fun onCleared() {
         updateProgressJob?.cancel()
-        audioPlayer.release()
+        audioPlayer.releasePlayer()
     }
 }
 

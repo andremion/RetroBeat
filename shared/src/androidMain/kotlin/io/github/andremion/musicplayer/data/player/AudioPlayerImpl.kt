@@ -111,8 +111,8 @@ internal class AudioPlayerImpl(
         }
     }
 
-    override fun release() {
-        releaseMediaController()
+    override fun releasePlayer() {
+        MediaController.releaseFuture(controllerFuture)
     }
 
     /**
@@ -133,10 +133,6 @@ internal class AudioPlayerImpl(
 
     private fun onMediaControllerInitialized() {
         mutableEvents.tryEmit(AudioPlayer.Event.PlayerInitialized)
-    }
-
-    private fun releaseMediaController() {
-        MediaController.releaseFuture(controllerFuture)
     }
 }
 
