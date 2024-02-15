@@ -1,5 +1,6 @@
 package io.github.andremion.musicplayer.ui.player
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,9 +25,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import io.github.andremion.musicplayer.domain.entity.Music
 import io.github.andremion.musicplayer.domain.entity.Playlist
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,11 +87,12 @@ fun Playlist(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    AsyncImage(
+                    KamelImage(
                         modifier = Modifier
                             .size(56.dp),
-                        model = music.album.art,
+                        resource = asyncPainterResource(music.album.art),
                         contentDescription = "Album art",
+                        animationSpec = tween(),
                     )
                     Column {
                         Text(

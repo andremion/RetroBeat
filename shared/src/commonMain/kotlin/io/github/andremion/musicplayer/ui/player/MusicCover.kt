@@ -21,7 +21,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -55,7 +56,7 @@ fun MusicCover(
         }
     }
 
-    AsyncImage(
+    KamelImage(
         modifier = modifier
             .graphicsLayer {
                 rotationZ = if (endRotationAnimation.isRunning) endRotationAnimation.value else rotation
@@ -71,9 +72,10 @@ fun MusicCover(
                     alpha = transition
                 )
             },
-        model = uri,
+        resource = asyncPainterResource(uri),
         contentScale = ContentScale.FillWidth,
-        contentDescription = "Music Cover"
+        contentDescription = "Music Cover",
+        animationSpec = tween()
     )
 }
 

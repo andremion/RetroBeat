@@ -11,7 +11,8 @@ jetbrains-compose = "1.6.0-beta02"
 koin = "3.5.3"
 koin-compose = "1.1.2"
 precompose = "1.5.10"
-coil-compose = "2.5.0"
+kamel-image = "0.9.2"
+ktor = "2.3.8"
 
 [libraries]
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -26,7 +27,10 @@ koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = 
 precompose = { group = "moe.tlaster", name = "precompose", version.ref = "precompose" }
 precompose-viewmodel = { group = "moe.tlaster", name = "precompose-viewmodel", version.ref = "precompose" }
 precompose-koin = { group = "moe.tlaster", name = "precompose-koin", version.ref = "precompose" }
-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil-compose" }
+kamel-image = { group = "media.kamel", name = "kamel-image", version.ref = "kamel-image" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-ios = { group = "io.ktor", name = "ktor-client-ios", version.ref = "ktor" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
