@@ -18,7 +18,7 @@ interface AudioPlayer {
     fun seekForward()
     fun toggleRepeatMode()
     fun toggleShuffleMode()
-    fun releasePlayer()
+    fun releasePlayer() // There is a `release` function in ObjectiveC.NSObject already. So I had to use a Player suffix.
 
     data class State(
         val isPlaying: Boolean = false,
