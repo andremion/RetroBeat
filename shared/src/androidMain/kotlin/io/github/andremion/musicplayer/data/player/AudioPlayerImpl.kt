@@ -16,11 +16,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import io.github.andremion.musicplayer.data.service.MusicService
 import io.github.andremion.musicplayer.domain.AudioPlayer
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 internal class AudioPlayerImpl(
@@ -40,11 +37,18 @@ internal class AudioPlayerImpl(
     private val mutableTrack = MutableStateFlow<AudioPlayer.Track?>(null)
     override val currentTrack: StateFlow<AudioPlayer.Track?> = mutableTrack.asStateFlow()
 
-    private val mutableEvents = MutableSharedFlow<AudioPlayer.Event>(extraBufferCapacity = 1)
-    override val events: SharedFlow<AudioPlayer.Event> = mutableEvents.asSharedFlow()
-
-    init {
-        initializeMediaController()
+    override fun initialize(onInitialized: () -> Unit) {
+        // Attaches the media session from the service to the media controller,
+        // so that the media controller can be used to control the media session.
+        val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))
+        controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture.addListener(
+            {
+                controllerFuture.get().addListener(listener)
+                onInitialized()
+            },
+            MoreExecutors.directExecutor()
+        )
     }
 
     override fun setTracks(tracks: List<AudioPlayer.Track>) {
@@ -113,26 +117,6 @@ internal class AudioPlayerImpl(
 
     override fun releasePlayer() {
         MediaController.releaseFuture(controllerFuture)
-    }
-
-    /**
-     * Attaches the media session from the service to the media controller,
-     * so that the media controller can be used to control the media session.
-     */
-    private fun initializeMediaController() {
-        val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))
-        controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-        controllerFuture.addListener(
-            {
-                controllerFuture.get().addListener(listener)
-                onMediaControllerInitialized()
-            },
-            MoreExecutors.directExecutor()
-        )
-    }
-
-    private fun onMediaControllerInitialized() {
-        mutableEvents.tryEmit(AudioPlayer.Event.PlayerInitialized)
     }
 }
 

@@ -1,14 +1,13 @@
 package io.github.andremion.musicplayer.domain
 
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface AudioPlayer {
 
     val state: StateFlow<State>
     val currentTrack: StateFlow<Track?>
-    val events: SharedFlow<Event>
 
+    fun initialize(onInitialized: () -> Unit)
     fun setTracks(tracks: List<Track>)
     fun play()
     fun updateProgress()
@@ -41,10 +40,6 @@ interface AudioPlayer {
             val albumTitle: String,
             val artworkUri: String,
         )
-    }
-
-    sealed interface Event {
-        data object PlayerInitialized : Event
     }
 
     enum class RepeatMode { Off, One, All }

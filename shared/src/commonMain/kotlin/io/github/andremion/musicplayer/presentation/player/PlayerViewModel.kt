@@ -3,11 +3,11 @@ package io.github.andremion.musicplayer.presentation.player
 import io.github.andremion.musicplayer.domain.AudioPlayer
 import io.github.andremion.musicplayer.domain.MusicRepository
 import io.github.andremion.musicplayer.domain.entity.Music
+import io.github.andremion.musicplayer.domain.entity.Playlist
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -21,22 +21,24 @@ class PlayerViewModel(
 
     private var updateProgressJob: Job? = null
 
-    private val playlist = repository.getPlaylist()
+    private val playlist = repository.getPlaylist().onEach { playlist ->
+        initializePlayer(playlist)
+    }
 
     private val playerState = audioPlayer.state.onEach { state ->
         updateProgressJob?.cancel()
-        // If the player is playing, request a new progress update after a delay of 1 second
         if (state.isPlaying) {
-            updateProgressJob = viewModelScope.launch {
-                delay(1000)
-                audioPlayer.updateProgress()
-            }
+            requestDelayedProgressUpdate()
         }
     }
 
     private val currentTrack = audioPlayer.currentTrack
 
-    val uiState = combine(playlist, playerState, currentTrack) { playlist, playerState, currentTrack ->
+    val uiState = combine(
+        playlist,
+        playerState,
+        currentTrack,
+    ) { playlist, playerState, currentTrack ->
         PlayerUiState(
             playlist = playlist,
             playerState = playerState,
@@ -47,17 +49,6 @@ class PlayerViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = PlayerUiState()
     )
-
-    init {
-        audioPlayer.events.onEach { event ->
-            when (event) {
-                AudioPlayer.Event.PlayerInitialized -> {
-                    uiState.value.playlist?.musics?.toTracks()
-                        ?.also(audioPlayer::setTracks)
-                }
-            }
-        }.launchIn(viewModelScope)
-    }
 
     fun onUiEvent(event: PlayerUiEvent) {
         when (event) {
@@ -98,6 +89,19 @@ class PlayerViewModel(
     override fun onCleared() {
         updateProgressJob?.cancel()
         audioPlayer.releasePlayer()
+    }
+
+    private fun initializePlayer(playlist: Playlist) {
+        audioPlayer.initialize {
+            audioPlayer.setTracks(playlist.musics.toTracks())
+        }
+    }
+
+    private fun requestDelayedProgressUpdate() {
+        updateProgressJob = viewModelScope.launch {
+            delay(1000)
+            audioPlayer.updateProgress()
+        }
     }
 }
 
