@@ -6,6 +6,7 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     //private var session = AVAudioSession.sharedInstance()
 
     private var player: AVPlayer? = nil
+    private var currentItemIndex: Int = 0
     private var tracks: Array<AudioPlayerTrack> = Array()
     
     override func initialize(onInitialized: @escaping () -> Void) {
@@ -14,14 +15,9 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     
     override func setTracks(tracks: [AudioPlayerTrack]) {
         self.tracks = tracks
-        let currentTrack = tracks[0]
-        let url = URL(string: currentTrack.uri)
-        let playerItem = AVPlayerItem(url: url!)
-        player = AVPlayer(playerItem: playerItem)
-        updateTrack { _ in currentTrack }
-        updateProgress()
+        setCurrentItem(index: 0)
     }
-
+    
     override func play() {
         if let player = player {
             player.play()
@@ -35,6 +31,7 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     override func updateProgress() {
         if let player = player {
             if let currentItem = player.currentItem {
+                guard (player.currentTime().isNumeric && currentItem.duration.isNumeric) else { return }
                 updateState { state in
                     state.copy(
                         position: Float(player.currentTime().seconds / currentItem.duration.seconds),
@@ -57,11 +54,15 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     }
 
     override func skipToPrevious() {
-
+        if (currentItemIndex > 0) {
+            setCurrentItem(index: currentItemIndex - 1)
+        }
     }
 
     override func skipToNext() {
-
+        if (currentItemIndex < tracks.count - 1) {
+            setCurrentItem(index: currentItemIndex + 1)
+        }
     }
 
     override func seekBackward() {
@@ -85,7 +86,20 @@ class AudioPlayerImpl: AbstractAudioPlayer {
         player = nil
     }
     
-    
+    private func setCurrentItem(index: Int) {
+        currentItemIndex = index
+        let currentTrack = tracks[index]
+        let url = URL(string: currentTrack.uri)
+        let playerItem = AVPlayerItem(url: url!)
+        if let player = player {
+            player.replaceCurrentItem(with: playerItem)
+        } else {
+            player = AVPlayer(playerItem: playerItem)
+        }
+        updateTrack { _ in currentTrack }
+        updateProgress()
+    }
+
     /*private func activateSession() {
         do {
             try session.setCategory(
