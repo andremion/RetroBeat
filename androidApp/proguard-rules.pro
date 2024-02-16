@@ -15,3 +15,4 @@
 
 -dontwarn kotlinx.serialization.KSerializer
 -dontwarn kotlinx.serialization.Serializable
+-dontwarn org.slf4j.impl.StaticLoggerBinder
