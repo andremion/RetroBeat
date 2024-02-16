@@ -203,6 +203,7 @@ private fun ScreenContent(
                 ) {
                     Playlist(
                         playlist = playlist,
+                        selectedMusicId = uiState.currentTrack?.id,
                         topBarPaddingTop = PlayButtonSize / 2,
                     )
                 }

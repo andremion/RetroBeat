@@ -17,6 +17,7 @@
 package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.domain.entity.Music
@@ -50,6 +52,7 @@ import io.kamel.image.asyncPainterResource
 @Composable
 fun Playlist(
     playlist: Playlist,
+    selectedMusicId: String?,
     topBarPaddingTop: Dp
 ) {
     Scaffold(
@@ -93,9 +96,17 @@ fun Playlist(
                 items = playlist.musics,
                 key = Music::id
             ) { music ->
+                val isSelected = music.id == selectedMusicId
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .background(
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.38f)
+                            } else {
+                                Color.Transparent
+                            }
+                        )
                         .clickable {
 
                         }
@@ -118,6 +129,7 @@ fun Playlist(
                         Text(
                             text = music.artist,
                             style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
