@@ -8,6 +8,7 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     private var player: AVPlayer? = nil
     private var currentItemIndex: Int = 0
     private var tracks: Array<AudioPlayerTrack> = Array()
+    private var timeObserverToken: Any? = nil
     
     override func initialize(onInitialized: @escaping () -> Void) {
         onInitialized()
@@ -29,20 +30,26 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     }
 
     override func updateProgress() {
-        if let player = player {
-            if let currentItem = player.currentItem {
-                guard (player.currentTime().isNumeric && currentItem.duration.isNumeric) else { return }
-                updateState { state in
-                    state.copy(
-                        position: Float(player.currentTime().seconds / currentItem.duration.seconds),
-                        time: player.currentTime().toString(),
-                        duration: currentItem.duration.toString()
-                    )
+        Task.init {
+            do {
+                if let player = player {
+                    if let currentItem = player.currentItem {
+                        let duration = try await currentItem.asset.load(.duration)
+                        updateState { state in
+                            state.copy(
+                                position: Float(player.currentTime().seconds / duration.seconds),
+                                time: player.currentTime().toString(),
+                                duration: duration.toString()
+                            )
+                        }
+                    }
                 }
+            } catch {
+                NSLog("Error on fetching player item duration")
             }
         }
     }
-
+    
     override func pause() {
         if let player = player {
             player.pause()
@@ -88,15 +95,39 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     
     private func setCurrentItem(index: Int) {
         currentItemIndex = index
+
         let currentTrack = tracks[index]
+        updateTrack { track in currentTrack }
+
         let url = URL(string: currentTrack.uri)
         let playerItem = AVPlayerItem(url: url!)
+        if let timeObserverToken = timeObserverToken {
+            player?.removeTimeObserver(timeObserverToken)
+            self.timeObserverToken = nil
+        }
         if let player = player {
             player.replaceCurrentItem(with: playerItem)
         } else {
             player = AVPlayer(playerItem: playerItem)
         }
-        updateTrack { _ in currentTrack }
+        
+        /*Task.init {
+            do {
+                let duration = try await playerItem.asset.load(.duration)
+                let interval = CMTimeMultiplyByFloat64(duration, multiplier: 1.0)
+                NSLog("duration=\(duration), interval=\(interval)")
+                timeObserverToken = player?.addBoundaryTimeObserver(
+                    forTimes: [NSValue(time: interval)],
+                    queue: .main
+                ) { [weak self] in
+                    NSLog("Here")
+                    self?.skipToNext()
+                }
+            } catch {
+                NSLog("Error on fetching player item duration")
+            }
+        }*/
+        
         updateProgress()
     }
 
