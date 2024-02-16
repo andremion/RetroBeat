@@ -29,14 +29,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.FastForward
-import androidx.compose.material.icons.rounded.FastRewind
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -54,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.domain.AudioPlayer
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
@@ -120,7 +122,10 @@ private fun ScreenContent(
 
             val playButton = rememberMovableContent { modifier ->
                 FloatingActionButton(
-                    modifier = modifier.animateBounds(),
+                    modifier = modifier
+                        .size(PlayButtonSize)
+                        .animateBounds(),
+                    shape = CircleShape,
                     onClick = {
                         if (isPlaying) {
                             onUiEvent(PlayerUiEvent.PauseClick)
@@ -130,6 +135,7 @@ private fun ScreenContent(
                     },
                 ) {
                     Icon(
+                        modifier = Modifier.size(SmallIconSize),
                         imageVector = if (isPlaying) {
                             Icons.Rounded.Pause
                         } else {
@@ -208,12 +214,15 @@ private fun ScreenContent(
                     .padding(top = CoverHeight * 1.3f),
                 visible = isPlaying,
             ) {
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
                     IconToggleButton(
                         checked = uiState.playerState.repeatMode != AudioPlayer.RepeatMode.Off,
                         onCheckedChange = { onUiEvent(PlayerUiEvent.RepeatClick) }
                     ) {
                         Icon(
+                            modifier = Modifier.size(SmallIconSize),
                             imageVector = when (uiState.playerState.repeatMode) {
                                 AudioPlayer.RepeatMode.Off -> Icons.Rounded.Repeat
                                 AudioPlayer.RepeatMode.One -> Icons.Rounded.RepeatOne
@@ -231,6 +240,7 @@ private fun ScreenContent(
                         onCheckedChange = { onUiEvent(PlayerUiEvent.ShuffleClick) },
                     ) {
                         Icon(
+                            modifier = Modifier.size(SmallIconSize),
                             imageVector = Icons.Rounded.Shuffle,
                             contentDescription = if (uiState.playerState.isShuffleModeOn) {
                                 "Shuffle mode on"
@@ -257,6 +267,7 @@ private fun ScreenContent(
                         onClick = { onUiEvent(PlayerUiEvent.SkipToPrevious) }
                     ) {
                         Icon(
+                            modifier = Modifier.size(DefaultIconSize),
                             imageVector = Icons.Rounded.SkipPrevious,
                             contentDescription = "Skip to previous",
                         )
@@ -265,7 +276,8 @@ private fun ScreenContent(
                         onClick = { onUiEvent(PlayerUiEvent.SeekBackward) }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.FastRewind,
+                            modifier = Modifier.size(DefaultIconSize),
+                            imageVector = Icons.Rounded.Replay,
                             contentDescription = "Seek backward",
                         )
                     }
@@ -273,7 +285,10 @@ private fun ScreenContent(
                         onClick = { onUiEvent(PlayerUiEvent.SeekForward) }
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.FastForward,
+                            modifier = Modifier
+                                .size(DefaultIconSize)
+                                .graphicsLayer { rotationY = 180f },
+                            imageVector = Icons.Rounded.Replay,
                             contentDescription = "Seek forward",
                         )
                     }
@@ -281,6 +296,7 @@ private fun ScreenContent(
                         onClick = { onUiEvent(PlayerUiEvent.SkipToNext) }
                     ) {
                         Icon(
+                            modifier = Modifier.size(DefaultIconSize),
                             imageVector = Icons.Rounded.SkipNext,
                             contentDescription = "Skip to next",
                         )
@@ -361,4 +377,6 @@ private fun ScreenContent(
 }
 
 private val CoverHeight = 256.dp
-private val PlayButtonSize = 56.dp
+private val PlayButtonSize = 64.dp
+private val DefaultIconSize = 48.dp
+private val SmallIconSize = 32.dp
