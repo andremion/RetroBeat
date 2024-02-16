@@ -6,57 +6,42 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     //private var session = AVAudioSession.sharedInstance()
 
     private var player: AVPlayer? = nil
+    private var tracks: Array<AudioPlayerTrack> = Array()
     
     override func initialize(onInitialized: @escaping () -> Void) {
         onInitialized()
     }
     
     override func setTracks(tracks: [AudioPlayerTrack]) {
+        self.tracks = tracks
         let currentTrack = tracks[0]
         let url = URL(string: currentTrack.uri)
         let playerItem = AVPlayerItem(url: url!)
         player = AVPlayer(playerItem: playerItem)
-        updateTrack { track in
-            AudioPlayerTrack(
-                id: currentTrack.id,
-                uri: currentTrack.uri,
-                metadata: AudioPlayerTrack.Metadata(
-                    title: currentTrack.metadata.title,
-                    artist: currentTrack.metadata.artist,
-                    albumTitle: currentTrack.metadata.albumTitle,
-                    artworkUri: currentTrack.metadata.artworkUri
-                )
-            )
-        }
+        updateTrack { _ in currentTrack }
+        updateProgress()
     }
 
     override func play() {
         if let player = player {
             player.play()
             updateState { state in
-                AudioPlayerState(
-                    isPlaying: true,
-                    position: state.position,
-                    time: state.time,
-                    duration: state.duration,
-                    repeatMode: state.repeatMode,
-                    isShuffleModeOn: state.isShuffleModeOn
-                )
+                state.copy(isPlaying: true)
             }
+            updateProgress()
         }
     }
 
     override func updateProgress() {
         if let player = player {
-            updateState { state in
-                AudioPlayerState(
-                    isPlaying: true,
-                    position: 0.2,
-                    time: player.currentTime().seconds.description,
-                    duration: player.currentItem?.duration.seconds.description ?? "duration",
-                    repeatMode: state.repeatMode,
-                    isShuffleModeOn: state.isShuffleModeOn
-                )
+            if let currentItem = player.currentItem {
+                updateState { state in
+                    state.copy(
+                        position: Float(player.currentTime().seconds / currentItem.duration.seconds),
+                        time: player.currentTime().toString(),
+                        duration: currentItem.duration.toString()
+                    )
+                }
             }
         }
     }
@@ -65,15 +50,9 @@ class AudioPlayerImpl: AbstractAudioPlayer {
         if let player = player {
             player.pause()
             updateState { state in
-                AudioPlayerState(
-                    isPlaying: false,
-                    position: state.position,
-                    time: state.time,
-                    duration: state.duration,
-                    repeatMode: state.repeatMode,
-                    isShuffleModeOn: state.isShuffleModeOn
-                )
+                state.copy(isPlaying: false)
             }
+            updateProgress()
         }
     }
 
@@ -106,6 +85,7 @@ class AudioPlayerImpl: AbstractAudioPlayer {
         player = nil
     }
     
+    
     /*private func activateSession() {
         do {
             try session.setCategory(
@@ -131,4 +111,39 @@ class AudioPlayerImpl: AbstractAudioPlayer {
             print("Failed to deactivate audio session: \(error.localizedDescription)")
         }
     }*/
+}
+
+private extension AudioPlayerState {
+    func copy(isPlaying: Bool) -> AudioPlayerState {
+        AudioPlayerState(
+            isPlaying: isPlaying,
+            position: self.position,
+            time: self.time,
+            duration: self.duration,
+            repeatMode: self.repeatMode,
+            isShuffleModeOn: self.isShuffleModeOn
+        )
+    }
+    func copy(position: Float, time: String, duration: String) -> AudioPlayerState {
+        AudioPlayerState(
+            isPlaying: self.isPlaying,
+            position: position,
+            time: time,
+            duration: duration,
+            repeatMode: self.repeatMode,
+            isShuffleModeOn: self.isShuffleModeOn
+        )
+    }
+}
+
+private extension CMTime {
+    func toString() -> String {
+        let roundedSeconds = seconds.rounded()
+        var hours = Int(roundedSeconds / 3600)
+        var minutes = Int((roundedSeconds / 60).truncatingRemainder(dividingBy: 60))
+        var seconds = Int(roundedSeconds.truncatingRemainder(dividingBy: 60))
+        return hours > 0 ?
+            String(format: "%d:%02d:%02d", hours, minutes, seconds) :
+            String(format: "%02d:%02d", minutes, seconds)
+    }
 }
