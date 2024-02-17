@@ -20,6 +20,6 @@ import org.koin.dsl.module
 
 internal actual object InternalDataModule {
     actual val module = module {
-        // Nothing specific to iOS yet
+        // Nothing to inject to iOS fom Kotlin yet
     }
 }

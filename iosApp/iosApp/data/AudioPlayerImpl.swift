@@ -38,8 +38,10 @@ class AudioPlayerImpl: AbstractAudioPlayer {
                         updateState { state in
                             state.copy(
                                 position: Float(player.currentTime().seconds / duration.seconds),
-                                time: player.currentTime().toString(),
-                                duration: duration.toString()
+                                time: DurationKt
+                                    .toDuration(milliseconds: player.currentTime().seconds.rounded() * 1_000),
+                                duration: DurationKt
+                                    .toDuration(milliseconds: duration.seconds.rounded() * 1_000)
                             )
                         }
                     }
@@ -159,6 +161,7 @@ class AudioPlayerImpl: AbstractAudioPlayer {
 }
 
 private extension AudioPlayerState {
+
     func copy(isPlaying: Bool) -> AudioPlayerState {
         AudioPlayerState(
             isPlaying: isPlaying,
@@ -169,7 +172,8 @@ private extension AudioPlayerState {
             isShuffleModeOn: self.isShuffleModeOn
         )
     }
-    func copy(position: Float, time: String, duration: String) -> AudioPlayerState {
+
+    func copy(position: Float, time: Int64, duration: Int64) -> AudioPlayerState {
         AudioPlayerState(
             isPlaying: self.isPlaying,
             position: position,
@@ -178,17 +182,5 @@ private extension AudioPlayerState {
             repeatMode: self.repeatMode,
             isShuffleModeOn: self.isShuffleModeOn
         )
-    }
-}
-
-private extension CMTime {
-    func toString() -> String {
-        let roundedSeconds = seconds.rounded()
-        var hours = Int(roundedSeconds / 3600)
-        var minutes = Int((roundedSeconds / 60).truncatingRemainder(dividingBy: 60))
-        var seconds = Int(roundedSeconds.truncatingRemainder(dividingBy: 60))
-        return hours > 0 ?
-            String(format: "%d:%02d:%02d", hours, minutes, seconds) :
-            String(format: "%02d:%02d", minutes, seconds)
     }
 }

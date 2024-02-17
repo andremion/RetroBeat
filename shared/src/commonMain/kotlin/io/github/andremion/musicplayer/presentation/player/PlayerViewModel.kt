@@ -16,7 +16,7 @@
 
 package io.github.andremion.musicplayer.presentation.player
 
-import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.component.player.AudioPlayer
 import io.github.andremion.musicplayer.domain.MusicRepository
 import io.github.andremion.musicplayer.domain.entity.Music
 import io.github.andremion.musicplayer.domain.entity.Playlist

@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.data.player
+package io.github.andremion.musicplayer.component.player
 
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
@@ -24,22 +24,16 @@ import androidx.media3.common.Player.RepeatMode
 import androidx.media3.common.Player.State
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.common.util.Util
 import androidx.media3.session.MediaController
-import io.github.andremion.musicplayer.domain.AudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.Formatter
-import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 internal class MediaControllerListener(
     private val mediaController: MediaController,
     private val mutableState: MutableStateFlow<AudioPlayer.State>,
     private val mutableTrack: MutableStateFlow<AudioPlayer.Track?>
 ) : Player.Listener {
-
-    private val formatBuilder = StringBuilder()
-    private val formatter = Formatter(formatBuilder, Locale.getDefault())
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         updateCurrentTrack()
@@ -111,8 +105,8 @@ internal class MediaControllerListener(
             mutableState.update { state ->
                 state.copy(
                     position = (mediaController.currentPosition / mediaController.duration.toFloat()).coerceIn(0f, 1f),
-                    time = Util.getStringForTime(formatBuilder, formatter, mediaController.currentPosition),
-                    duration = Util.getStringForTime(formatBuilder, formatter, mediaController.duration)
+                    time = mediaController.currentPosition.milliseconds,
+                    duration = mediaController.duration.milliseconds,
                 )
             }
         } else {

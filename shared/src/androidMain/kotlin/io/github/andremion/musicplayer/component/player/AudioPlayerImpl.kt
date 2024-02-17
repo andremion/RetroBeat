@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.data.player
+package io.github.andremion.musicplayer.component.player
 
 import android.content.ComponentName
 import android.content.Context
@@ -30,8 +30,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import io.github.andremion.musicplayer.data.service.MusicService
-import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.component.player.service.MusicService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

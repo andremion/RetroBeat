@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.data.service
+package io.github.andremion.musicplayer.component.player.service
 
 import android.content.Intent
 import androidx.annotation.OptIn

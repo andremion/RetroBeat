@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import io.github.andremion.musicplayer.component.time.format
 import io.github.andremion.musicplayer.domain.entity.Music
 import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.kamel.image.KamelImage
@@ -121,7 +122,9 @@ fun Playlist(
                         contentDescription = "Album art",
                         animationSpec = tween(),
                     )
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                    ) {
                         Text(
                             text = music.title,
                             style = MaterialTheme.typography.bodyLarge,
@@ -132,6 +135,11 @@ fun Playlist(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    Text(
+                        text = music.duration.format(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
         }

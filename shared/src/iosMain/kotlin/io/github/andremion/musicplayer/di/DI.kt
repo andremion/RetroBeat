@@ -16,7 +16,7 @@
 
 package io.github.andremion.musicplayer.di
 
-import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.component.player.AudioPlayer
 import org.koin.dsl.module
 
 /**

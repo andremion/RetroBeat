@@ -16,10 +16,13 @@
 
 package io.github.andremion.musicplayer.domain.entity
 
+import kotlin.time.Duration
+
 data class Music(
     val id: String,
     val uri: String,
     val title: String,
+    val duration: Duration,
     val artist: String,
     val album: Album,
 ) {

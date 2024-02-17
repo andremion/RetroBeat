@@ -14,9 +14,11 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.domain
+package io.github.andremion.musicplayer.component.player
 
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 interface AudioPlayer {
 
@@ -39,8 +41,8 @@ interface AudioPlayer {
     data class State(
         val isPlaying: Boolean = false,
         val position: Float = -0f,
-        val time: String = "",
-        val duration: String = "",
+        val time: Duration = 0.milliseconds,
+        val duration: Duration = 0.milliseconds,
         val repeatMode: RepeatMode = RepeatMode.Off,
         val isShuffleModeOn: Boolean = false,
     )

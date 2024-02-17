@@ -57,7 +57,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
-import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.component.player.AudioPlayer
+import io.github.andremion.musicplayer.component.time.format
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
 import io.github.andremion.musicplayer.presentation.player.PlayerUiState
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
@@ -173,7 +174,7 @@ private fun ScreenContent(
             val time = rememberMovableContent { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = uiState.playerState.time,
+                    text = uiState.playerState.time.format(),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -182,7 +183,7 @@ private fun ScreenContent(
             val duration = rememberMovableContent { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = uiState.playerState.duration,
+                    text = uiState.playerState.duration.format(),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )

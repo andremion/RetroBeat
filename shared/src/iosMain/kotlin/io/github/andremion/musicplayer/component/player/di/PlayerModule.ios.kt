@@ -14,13 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.presentation.player
+package io.github.andremion.musicplayer.component.player.di
 
-import io.github.andremion.musicplayer.component.player.AudioPlayer
-import io.github.andremion.musicplayer.domain.entity.Playlist
+import org.koin.dsl.module
 
-data class PlayerUiState(
-    val playlist: Playlist? = null,
-    val playerState: AudioPlayer.State = AudioPlayer.State(),
-    val currentTrack: AudioPlayer.Track? = null,
-)
+actual object PlayerModule {
+    actual val module = module {
+        // Nothing to inject to iOS fom Kotlin yet
+    }
+}

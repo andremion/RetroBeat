@@ -14,13 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.presentation.player
+package io.github.andremion.musicplayer.component.player.di
 
-import io.github.andremion.musicplayer.component.player.AudioPlayer
-import io.github.andremion.musicplayer.domain.entity.Playlist
+import org.koin.core.module.Module
 
-data class PlayerUiState(
-    val playlist: Playlist? = null,
-    val playerState: AudioPlayer.State = AudioPlayer.State(),
-    val currentTrack: AudioPlayer.Track? = null,
-)
+expect object PlayerModule {
+    val module: Module
+}

@@ -16,7 +16,7 @@
 
 package io.github.andremion.musicplayer.data.player
 
-import io.github.andremion.musicplayer.domain.AudioPlayer
+import io.github.andremion.musicplayer.component.player.AudioPlayer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow

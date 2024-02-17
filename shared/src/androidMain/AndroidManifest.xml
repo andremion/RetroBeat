@@ -18,7 +18,7 @@
         </activity>
         <!-- You must define foregroundServiceType=mediaPlayback for API 29 and above -->
         <service
-            android:name=".data.service.MusicService"
+            android:name=".component.player.service.MusicService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
