@@ -99,6 +99,10 @@ class PlayerViewModel(
             PlayerUiEvent.ShuffleClick -> {
                 audioPlayer.toggleShuffleMode()
             }
+
+            is PlayerUiEvent.MusicClick -> {
+                audioPlayer.play(event.index)
+            }
         }
     }
 

@@ -28,7 +28,12 @@ class AudioPlayerImpl: AbstractAudioPlayer {
             updateProgress()
         }
     }
-
+    
+    override func play(index: Int32) {
+        setCurrentItem(index: Int(index))
+        play()
+    }
+    
     override func updateProgress() {
         Task.init {
             do {
@@ -164,6 +169,8 @@ private extension AudioPlayerState {
 
     func copy(isPlaying: Bool) -> AudioPlayerState {
         AudioPlayerState(
+            seekBackIncrement: self.seekBackIncrement,
+            seekForwardIncrement: self.seekForwardIncrement,
             isPlaying: isPlaying,
             position: self.position,
             time: self.time,
@@ -175,6 +182,8 @@ private extension AudioPlayerState {
 
     func copy(position: Float, time: Int64, duration: Int64) -> AudioPlayerState {
         AudioPlayerState(
+            seekBackIncrement: self.seekBackIncrement,
+            seekForwardIncrement: self.seekForwardIncrement,
             isPlaying: self.isPlaying,
             position: position,
             time: time,

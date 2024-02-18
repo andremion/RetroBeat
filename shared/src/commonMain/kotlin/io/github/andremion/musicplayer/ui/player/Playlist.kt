@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +45,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.component.time.format
-import io.github.andremion.musicplayer.domain.entity.Music
 import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -55,7 +54,8 @@ import io.kamel.image.asyncPainterResource
 fun Playlist(
     playlist: Playlist,
     selectedMusicId: String?,
-    topBarPaddingTop: Dp
+    topBarPaddingTop: Dp,
+    onMusicClick: (index: Int) -> Unit,
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -94,10 +94,10 @@ fun Playlist(
         LazyColumn(
             modifier = Modifier.padding(innerPadding),
         ) {
-            items(
+            itemsIndexed(
                 items = playlist.musics,
-                key = Music::id
-            ) { music ->
+                key = { _, music -> music.id }
+            ) { index, music ->
                 val isSelected = music.id == selectedMusicId
                 Row(
                     modifier = Modifier
@@ -109,9 +109,7 @@ fun Playlist(
                                 Color.Transparent
                             }
                         )
-                        .clickable {
-
-                        }
+                        .clickable { onMusicClick(index) }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

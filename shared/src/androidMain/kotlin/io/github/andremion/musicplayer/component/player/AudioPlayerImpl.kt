@@ -78,6 +78,13 @@ internal class AudioPlayerImpl(
         Util.handlePlayButtonAction(player)
     }
 
+    override fun play(index: Int) {
+        if (player.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)) {
+            player.seekTo(index, 0)
+            play()
+        }
+    }
+
     override fun updateProgress() {
         listener.updateProgress()
     }

@@ -206,6 +206,9 @@ private fun ScreenContent(
                         playlist = playlist,
                         selectedMusicId = uiState.currentTrack?.id,
                         topBarPaddingTop = PlayButtonSize / 2,
+                        onMusicClick = { index ->
+                            onUiEvent(PlayerUiEvent.MusicClick(index))
+                        }
                     )
                 }
             }
