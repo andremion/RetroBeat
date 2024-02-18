@@ -17,7 +17,6 @@
 package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +29,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -93,53 +94,61 @@ fun Playlist(
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.padding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             itemsIndexed(
                 items = playlist.musics,
                 key = { _, music -> music.id }
             ) { index, music ->
                 val isSelected = music.id == selectedMusicId
-                Row(
+                Card(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.38f)
-                            } else {
-                                Color.Transparent
-                            }
-                        )
-                        .clickable { onMusicClick(index) }
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(horizontal = 16.dp)
+                        .clip(MaterialTheme.shapes.extraSmall)
+                        .clickable { onMusicClick(index) },
+                    shape = MaterialTheme.shapes.extraSmall,
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = if (isSelected) {
+                            MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.38f)
+                        } else {
+                            Color.Unspecified
+                        }
+                    ),
                 ) {
-                    KamelImage(
+                    Row(
                         modifier = Modifier
-                            .size(56.dp)
-                            .clip(MaterialTheme.shapes.extraSmall),
-                        resource = asyncPainterResource(music.album.art),
-                        contentDescription = "Album art",
-                        animationSpec = tween(),
-                    )
-                    Column(
-                        modifier = Modifier.weight(1f),
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = music.title,
-                            style = MaterialTheme.typography.bodyLarge,
+                        KamelImage(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(MaterialTheme.shapes.extraSmall),
+                            resource = asyncPainterResource(music.album.art),
+                            contentDescription = "Album art",
+                            animationSpec = tween(),
                         )
+                        Column(
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(
+                                text = music.title,
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                            Text(
+                                text = music.artist,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         Text(
-                            text = music.artist,
+                            modifier = Modifier.padding(end = 8.dp),
+                            text = music.duration.format(),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    Text(
-                        text = music.duration.format(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
         }
