@@ -39,6 +39,8 @@ interface AudioPlayer {
     fun releasePlayer() // There is a `release` function in ObjectiveC.NSObject already. So I had to use a Player suffix.
 
     data class State(
+        val seekBackIncrement: Int = 5,
+        val seekForwardIncrement: Int = 15,
         val isPlaying: Boolean = false,
         val position: Float = -0f,
         val time: Duration = 0.milliseconds,

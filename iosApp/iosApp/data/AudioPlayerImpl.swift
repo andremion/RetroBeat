@@ -75,19 +75,19 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     }
 
     override func seekBackward() {
-
+        // TODO seekBackward
     }
 
     override func seekForward() {
-
+        // TODO seekForward
     }
     
     override func toggleRepeatMode() {
-
+        // TODO toggleRepeatMode
     }
     
     override func toggleShuffleMode() {
-
+        // TODO toggleShuffleMode
     }
 
     override func releasePlayer() {

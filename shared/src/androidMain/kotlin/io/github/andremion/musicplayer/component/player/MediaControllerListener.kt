@@ -35,6 +35,15 @@ internal class MediaControllerListener(
     private val mutableTrack: MutableStateFlow<AudioPlayer.Track?>
 ) : Player.Listener {
 
+    init {
+        mutableState.update { state ->
+            state.copy(
+                seekBackIncrement = (mediaController.seekBackIncrement / 1000).toInt(),
+                seekForwardIncrement = (mediaController.seekForwardIncrement / 1000).toInt()
+            )
+        }
+    }
+
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         updateCurrentTrack()
     }

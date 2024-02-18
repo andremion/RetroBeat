@@ -157,13 +157,13 @@ private fun ScreenContent(
                     horizontalAlignment = if (isPlaying) Alignment.CenterHorizontally else Alignment.Start,
                 ) {
                     Text(
-                        text = uiState.currentTrack?.metadata?.artist.toString(),
+                        text = uiState.currentTrack?.metadata?.title.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1
                     )
                     Text(
-                        text = uiState.currentTrack?.metadata?.title.toString(),
+                        text = uiState.currentTrack?.metadata?.artist.toString(),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1
@@ -277,22 +277,40 @@ private fun ScreenContent(
                     IconButton(
                         onClick = { onUiEvent(PlayerUiEvent.SeekBackward) }
                     ) {
-                        Icon(
-                            modifier = Modifier.size(DefaultIconSize),
-                            imageVector = Icons.Rounded.Replay,
-                            contentDescription = "Seek backward",
-                        )
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(DefaultIconSize),
+                                imageVector = Icons.Rounded.Replay,
+                                contentDescription = "Seek backward",
+                            )
+                            Text(
+                                modifier = Modifier.padding(top = 6.dp),
+                                text = uiState.playerState.seekBackIncrement.toString(),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
                     IconButton(
                         onClick = { onUiEvent(PlayerUiEvent.SeekForward) }
                     ) {
-                        Icon(
-                            modifier = Modifier
-                                .size(DefaultIconSize)
-                                .graphicsLayer { rotationY = 180f },
-                            imageVector = Icons.Rounded.Replay,
-                            contentDescription = "Seek forward",
-                        )
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(DefaultIconSize)
+                                    .graphicsLayer { rotationY = 180f },
+                                imageVector = Icons.Rounded.Replay,
+                                contentDescription = "Seek forward",
+                            )
+                            Text(
+                                modifier = Modifier.padding(top = 6.dp),
+                                text = uiState.playerState.seekForwardIncrement.toString(),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
                     IconButton(
                         onClick = { onUiEvent(PlayerUiEvent.SkipToNext) }

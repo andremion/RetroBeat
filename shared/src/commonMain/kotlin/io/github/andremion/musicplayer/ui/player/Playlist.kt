@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -117,7 +118,8 @@ fun Playlist(
                 ) {
                     KamelImage(
                         modifier = Modifier
-                            .size(56.dp),
+                            .size(56.dp)
+                            .clip(MaterialTheme.shapes.extraSmall),
                         resource = asyncPainterResource(music.album.art),
                         contentDescription = "Album art",
                         animationSpec = tween(),
