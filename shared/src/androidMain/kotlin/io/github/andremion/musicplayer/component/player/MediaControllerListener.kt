@@ -38,8 +38,8 @@ internal class MediaControllerListener(
     init {
         mutableState.update { state ->
             state.copy(
-                seekBackIncrement = (mediaController.seekBackIncrement / 1000).toInt(),
-                seekForwardIncrement = (mediaController.seekForwardIncrement / 1000).toInt()
+                seekBackIncrement = (mediaController.seekBackIncrement / 1_000).toInt(),
+                seekForwardIncrement = (mediaController.seekForwardIncrement / 1_000).toInt()
             )
         }
     }

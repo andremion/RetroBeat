@@ -80,7 +80,7 @@ internal class AudioPlayerImpl(
 
     override fun play(trackIndex: Int) {
         if (player.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)) {
-            player.seekTo(trackIndex, 0)
+            player.seekToDefaultPosition(trackIndex)
             play()
         }
     }

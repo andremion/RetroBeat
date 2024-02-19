@@ -39,21 +39,21 @@ class DiscoveryViewModel(
             )
         }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = DiscoveryUiState(isLoading = true)
         )
 
-    private val mutableEffect = MutableSharedFlow<DiscoveryUiEffect>(extraBufferCapacity = 1)
-    val uiEffect: SharedFlow<DiscoveryUiEffect> = mutableEffect
+    private val mutableUiEffect = MutableSharedFlow<DiscoveryUiEffect>(extraBufferCapacity = 1)
+    val uiEffect: SharedFlow<DiscoveryUiEffect> = mutableUiEffect
         .shareIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(5_000),
         )
 
     fun onUiEvent(event: DiscoveryUiEvent) {
         when (event) {
             is DiscoveryUiEvent.PlaylistClick -> {
-                mutableEffect.tryEmit(DiscoveryUiEffect.NavigateToPlayer(event.playlistId))
+                mutableUiEffect.tryEmit(DiscoveryUiEffect.NavigateToPlayer(event.playlistId))
             }
         }
     }

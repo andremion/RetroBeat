@@ -63,7 +63,7 @@ class PlayerViewModel(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(5_000),
         initialValue = PlayerUiState()
     )
 
@@ -120,7 +120,7 @@ class PlayerViewModel(
 
     private fun requestDelayedProgressUpdate() {
         updateProgressJob = viewModelScope.launch {
-            delay(1000)
+            delay(1_000)
             audioPlayer.updateProgress()
         }
     }
