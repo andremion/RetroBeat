@@ -18,18 +18,22 @@ package io.github.andremion.musicplayer.ui.discovery
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.domain.entity.Playlist
@@ -71,36 +75,46 @@ private fun ScreenContent(
     onUiEvent: (DiscoveryUiEvent) -> Unit
 ) {
     Scaffold { innerPadding ->
-        val playlists = uiState.playlists
-        if (playlists != null) {
-            LazyVerticalStaggeredGrid(
-                modifier = Modifier.padding(innerPadding),
-                columns = StaggeredGridCells.Fixed(2),
-                verticalItemSpacing = 8.dp,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(16.dp),
-            ) {
-                items(playlists, key = Playlist::id) { playlist ->
-                    Card(
-                        modifier = Modifier.clickable {
-                            onUiEvent(DiscoveryUiEvent.PlaylistClick(playlist.id))
-                        }
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            uiState.playlists
+                .onLoading {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Center)
+                    )
+                }
+                .onSuccess { playlists ->
+                    LazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Fixed(2),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(16.dp),
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            KamelImage(
-                                resource = asyncPainterResource(playlist.picture.big),
-                                contentDescription = null
-                            )
-                            Text(
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                text = playlist.title,
-                            )
+                        items(playlists, key = Playlist::id) { playlist ->
+                            Card(
+                                modifier = Modifier.clickable {
+                                    onUiEvent(DiscoveryUiEvent.PlaylistClick(playlist.id))
+                                }
+                            ) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    KamelImage(
+                                        resource = asyncPainterResource(playlist.picture.big),
+                                        contentDescription = null
+                                    )
+                                    Text(
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        text = playlist.title,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-            }
         }
     }
 }

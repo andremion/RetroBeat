@@ -17,9 +17,8 @@
 package io.github.andremion.musicplayer.presentation.discovery
 
 import io.github.andremion.musicplayer.domain.entity.Playlist
+import io.github.andremion.musicplayer.presentation.AsyncContent
 
 data class DiscoveryUiState(
-    val isLoading: Boolean = false,
-    val playlists: List<Playlist>? = null,
-    val error: Throwable? = null
+    val playlists: AsyncContent<List<Playlist>> = AsyncContent.loading(),
 )

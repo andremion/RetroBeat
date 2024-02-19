@@ -16,16 +16,12 @@
 
 package io.github.andremion.musicplayer.ui.player
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -40,11 +36,12 @@ fun TimeBar(
     position: Float,
     transition: Float
 ) {
-    val coercedPosition by animateFloatAsState(
-        label = "position",
-        targetValue = position.coerceIn(0f, 1f),
-        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
-    )
+//    val coercedPosition by animateFloatAsState(
+//        label = "position",
+//        targetValue = position.coerceIn(0f, 1f),
+//        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+//    )
+    val coercedPosition = position.coerceIn(0f, 1f)
 
     val trackColor = ProgressIndicatorDefaults.linearTrackColor
     val positionColor = ProgressIndicatorDefaults.linearColor

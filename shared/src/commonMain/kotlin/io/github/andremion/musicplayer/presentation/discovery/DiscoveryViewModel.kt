@@ -17,6 +17,7 @@
 package io.github.andremion.musicplayer.presentation.discovery
 
 import io.github.andremion.musicplayer.domain.MusicRepository
+import io.github.andremion.musicplayer.presentation.AsyncContent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,14 +34,12 @@ class DiscoveryViewModel(
 
     val uiState: StateFlow<DiscoveryUiState> = musicRepository.getPlaylists()
         .map { playlists ->
-            DiscoveryUiState(
-                isLoading = false,
-                playlists = playlists
-            )
-        }.stateIn(
+            DiscoveryUiState(playlists = AsyncContent.success(playlists))
+        }
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = DiscoveryUiState(isLoading = true)
+            initialValue = DiscoveryUiState()
         )
 
     private val mutableUiEffect = MutableSharedFlow<DiscoveryUiEffect>(extraBufferCapacity = 1)
