@@ -117,17 +117,18 @@ private fun ScreenContent(
                 targetValue = if (isPlaying) 1f else 0f,
             )
 
-            val cover = rememberMovableContent { modifier ->
+            val trackArtwork = uiState.currentTrack?.metadata?.artworkUri.toString()
+            val cover = rememberMovableContent(trackArtwork) { modifier ->
                 MusicCover(
                     modifier = modifier.animateBounds(),
-                    uri = uiState.currentTrack?.metadata?.artworkUri.toString(),
+                    uri = trackArtwork,
                     transition = sceneTransition,
                     rotate = playingState == PlayingState.Playing,
                     onRotationEnd = { playingState = PlayingState.Paused }
                 )
             }
 
-            val playButton = rememberMovableContent { modifier ->
+            val playButton = rememberMovableContent(isPlaying) { modifier ->
                 FloatingActionButton(
                     modifier = modifier
                         .size(PlayButtonSize)
@@ -157,20 +158,22 @@ private fun ScreenContent(
                 }
             }
 
-            val headline = rememberMovableContent { modifier ->
+            val title = uiState.currentTrack?.metadata?.title.toString()
+            val artist = uiState.currentTrack?.metadata?.artist.toString()
+            val headline = rememberMovableContent(title, artist) { modifier ->
                 Column(
                     modifier = modifier.animateBounds(),
                     horizontalAlignment = if (isPlaying) Alignment.CenterHorizontally else Alignment.Start,
                 ) {
                     Text(
-                        text = uiState.currentTrack?.metadata?.title.toString(),
+                        text = title,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = uiState.currentTrack?.metadata?.artist.toString(),
+                        text = artist,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -179,28 +182,31 @@ private fun ScreenContent(
                 }
             }
 
-            val time = rememberMovableContent { modifier ->
+            val time = uiState.playerState.time.format()
+            val timeText = rememberMovableContent(time) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = uiState.playerState.time.format(),
+                    text = time,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            val duration = rememberMovableContent { modifier ->
+            val duration = uiState.playerState.duration.format()
+            val durationText = rememberMovableContent(duration) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
-                    text = uiState.playerState.duration.format(),
+                    text = duration,
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            val timeBar = rememberMovableContent { modifier ->
+            val position = uiState.playerState.position
+            val timeBar = rememberMovableContent(position) { modifier ->
                 TimeBar(
                     modifier = modifier.animateBounds(),
-                    position = uiState.playerState.position,
+                    position = position,
                     transition = sceneTransition
                 )
             }
@@ -354,8 +360,8 @@ private fun ScreenContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom,
                     ) {
-                        time(Modifier)
-                        duration(Modifier)
+                        timeText(Modifier)
+                        durationText(Modifier)
                     }
                     timeBar(Modifier.matchParentSize())
                     playButton(Modifier)
@@ -388,11 +394,9 @@ private fun ScreenContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            time(Modifier)
-                            timeBar(
-                                Modifier.weight(1f)
-                            )
-                            duration(Modifier)
+                            timeText(Modifier)
+                            timeBar(Modifier.weight(1f))
+                            durationText(Modifier)
                         }
                     }
                     playButton(
