@@ -20,10 +20,12 @@ import io.github.andremion.musicplayer.component.player.AudioPlayer
 import io.github.andremion.musicplayer.domain.MusicRepository
 import io.github.andremion.musicplayer.domain.entity.Music
 import io.github.andremion.musicplayer.domain.entity.Playlist
+import io.github.andremion.musicplayer.presentation.AsyncContent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -38,9 +40,9 @@ class PlayerViewModel(
 
     private var updateProgressJob: Job? = null
 
-    private val playlist = repository.getPlaylist(playlistId).onEach { playlist ->
-        initializePlayer(playlist)
-    }
+    private val playlist = repository.getPlaylist(playlistId)
+        .onEach(::initializePlayer)
+        .map(AsyncContent.Companion::success)
 
     private val playerState = audioPlayer.state.onEach { state ->
         updateProgressJob?.cancel()

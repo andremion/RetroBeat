@@ -41,6 +41,7 @@ import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -211,20 +212,24 @@ private fun ScreenContent(
                 )
             }
 
-            uiState.playlist?.let { playlist ->
-                SlideFromBottom(
-                    modifier = Modifier.padding(top = CoverHeight),
-                    visible = !isPlaying
-                ) {
-                    Playlist(
-                        playlist = playlist,
-                        selectedMusicId = uiState.currentTrack?.id,
-                        topBarPaddingTop = PlayButtonSize / 2,
-                        onMusicClick = { musicIndex ->
-                            onUiEvent(PlayerUiEvent.MusicClick(musicIndex))
-                        }
-                    )
-                }
+            SlideFromBottom(
+                modifier = Modifier
+                    .padding(top = CoverHeight)
+                    .align(Alignment.Center),
+                visible = !isPlaying
+            ) {
+                uiState.playlist
+                    .onLoading { CircularProgressIndicator() }
+                    .onSuccess { playlist ->
+                        Playlist(
+                            playlist = playlist,
+                            selectedMusicId = uiState.currentTrack?.id,
+                            topBarPaddingTop = PlayButtonSize / 2,
+                            onMusicClick = { musicIndex ->
+                                onUiEvent(PlayerUiEvent.MusicClick(musicIndex))
+                            }
+                        )
+                    }
             }
 
             Fade(

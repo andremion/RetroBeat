@@ -18,9 +18,10 @@ package io.github.andremion.musicplayer.presentation.player
 
 import io.github.andremion.musicplayer.component.player.AudioPlayer
 import io.github.andremion.musicplayer.domain.entity.Playlist
+import io.github.andremion.musicplayer.presentation.AsyncContent
 
 data class PlayerUiState(
-    val playlist: Playlist? = null,
+    val playlist: AsyncContent<Playlist> = AsyncContent.loading(),
     val playerState: AudioPlayer.State = AudioPlayer.State(),
     val currentTrack: AudioPlayer.Track? = null,
 )
