@@ -58,15 +58,17 @@ class MusicService : MediaSessionService() {
 
     // The user dismissed the app from the recent tasks
     override fun onTaskRemoved(rootIntent: Intent?) {
-        if (!player.playWhenReady) {
-            player.pause()
-        }
+        release()
         stopSelf()
     }
 
     override fun onDestroy() {
+        release()
+        super.onDestroy()
+    }
+
+    private fun release() {
         player.release()
         mediaSession?.release()
-        super.onDestroy()
     }
 }
