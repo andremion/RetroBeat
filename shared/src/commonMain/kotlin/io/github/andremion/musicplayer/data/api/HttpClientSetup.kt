@@ -16,6 +16,7 @@
 
 package io.github.andremion.musicplayer.data.api
 
+import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
@@ -28,7 +29,7 @@ internal fun HttpClientConfig<*>.setupLogging() {
     install(Logging) {
         logger = object : Logger {
             override fun log(message: String) {
-                println("HttpClient: $message")
+                Napier.d(message, tag = "HttpClient")
             }
         }
         level = LogLevel.ALL

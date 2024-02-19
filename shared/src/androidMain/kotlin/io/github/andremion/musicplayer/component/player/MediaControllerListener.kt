@@ -25,6 +25,7 @@ import androidx.media3.common.Player.State
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.time.Duration.Companion.milliseconds
@@ -82,7 +83,10 @@ internal class MediaControllerListener(
                 mutableTrack.update { createTrack() }
             }
         } else {
-            println("COMMAND_GET_CURRENT_MEDIA_ITEM or COMMAND_GET_METADATA is not available")
+            Napier.w(
+                "COMMAND_GET_CURRENT_MEDIA_ITEM or COMMAND_GET_METADATA is not available",
+                tag = AudioPlayerImpl.LogTag
+            )
         }
     }
 
@@ -104,7 +108,7 @@ internal class MediaControllerListener(
                 state.copy(isPlaying = mediaController.isPlaying)
             }
         } else {
-            println("COMMAND_PLAY_PAUSE is not available")
+            Napier.w("COMMAND_PLAY_PAUSE is not available", tag = AudioPlayerImpl.LogTag)
         }
     }
 
@@ -119,7 +123,7 @@ internal class MediaControllerListener(
                 )
             }
         } else {
-            println("COMMAND_GET_CURRENT_MEDIA_ITEM is not available")
+            Napier.w("COMMAND_GET_CURRENT_MEDIA_ITEM is not available", tag = AudioPlayerImpl.LogTag)
         }
     }
 
@@ -129,7 +133,7 @@ internal class MediaControllerListener(
                 state.copy(repeatMode = map(mediaController.repeatMode))
             }
         } else {
-            println("COMMAND_SET_REPEAT_MODE is not available")
+            Napier.w("COMMAND_SET_REPEAT_MODE is not available", tag = AudioPlayerImpl.LogTag)
         }
     }
 
@@ -139,7 +143,7 @@ internal class MediaControllerListener(
                 state.copy(isShuffleModeOn = mediaController.shuffleModeEnabled)
             }
         } else {
-            println("COMMAND_SET_SHUFFLE_MODE is not available")
+            Napier.w("COMMAND_SET_SHUFFLE_MODE is not available", tag = AudioPlayerImpl.LogTag)
         }
     }
 
@@ -152,7 +156,7 @@ private fun log(events: Player.Events) {
     (0 until events.size())
         .map { events[it] }
         .joinToString(",")
-        .also { println("Player.Events=$it") }
+        .also { Napier.d("Player.Events=$it", tag = AudioPlayerImpl.LogTag) }
 }
 
 private fun map(@RepeatMode repeatMode: Int): AudioPlayer.RepeatMode =

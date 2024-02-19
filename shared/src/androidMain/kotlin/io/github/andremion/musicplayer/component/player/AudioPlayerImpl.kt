@@ -30,6 +30,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import io.github.aakira.napier.Napier
 import io.github.andremion.musicplayer.component.player.service.MusicService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +39,10 @@ import kotlinx.coroutines.flow.asStateFlow
 internal class AudioPlayerImpl(
     private val context: Context
 ) : AudioPlayer {
+
+    companion object {
+        const val LogTag = "AudioPlayer"
+    }
 
     private lateinit var controllerFuture: ListenableFuture<MediaController>
     private val listener: MediaControllerListener by lazy {
@@ -125,7 +130,7 @@ internal class AudioPlayerImpl(
                 /* enabledModes = */ RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE or RepeatModeUtil.REPEAT_TOGGLE_MODE_ALL
             )
         } else {
-            println("COMMAND_SET_REPEAT_MODE is not available")
+            Napier.w("COMMAND_SET_REPEAT_MODE is not available", tag = LogTag)
         }
     }
 
@@ -133,7 +138,7 @@ internal class AudioPlayerImpl(
         if (player.isCommandAvailable(Player.COMMAND_SET_SHUFFLE_MODE)) {
             player.shuffleModeEnabled = !player.shuffleModeEnabled
         } else {
-            println("COMMAND_SET_SHUFFLE_MODE is not available")
+            Napier.w("COMMAND_SET_SHUFFLE_MODE is not available", tag = LogTag)
         }
     }
 

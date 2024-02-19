@@ -16,17 +16,13 @@
 
 package io.github.andremion.musicplayer
 
-import android.app.Application
-import io.github.andremion.musicplayer.di.initDI
-import org.koin.android.ext.koin.androidContext
+import io.github.aakira.napier.DebugAntilog
+import io.github.aakira.napier.Napier
+import kotlin.experimental.ExperimentalNativeApi
 
-class MainApp : Application() {
-
-    override fun onCreate() {
-        super.onCreate()
-
-        initDI().androidContext(this)
-
-        initLogging()
+@OptIn(ExperimentalNativeApi::class)
+actual fun initLogging() {
+    if (Platform.isDebugBinary) {
+        Napier.base(DebugAntilog())
     }
 }
