@@ -27,6 +27,9 @@ internal data class SearchPlaylistResponse(
     data class Playlist(
         val id: Long,
         val title: String,
+        val picture_small: String,
+        val picture_medium: String,
         val picture_big: String,
+        val picture_xl: String,
     )
 }

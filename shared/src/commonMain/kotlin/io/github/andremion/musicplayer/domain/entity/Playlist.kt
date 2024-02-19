@@ -20,5 +20,6 @@ data class Playlist(
     val id: String,
     val title: String,
     val description: String,
+    val picture: Picture,
     val musics: List<Music>
 )

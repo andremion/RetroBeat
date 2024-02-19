@@ -78,9 +78,9 @@ internal class AudioPlayerImpl(
         Util.handlePlayButtonAction(player)
     }
 
-    override fun play(index: Int) {
+    override fun play(trackIndex: Int) {
         if (player.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)) {
-            player.seekTo(index, 0)
+            player.seekTo(trackIndex, 0)
             play()
         }
     }

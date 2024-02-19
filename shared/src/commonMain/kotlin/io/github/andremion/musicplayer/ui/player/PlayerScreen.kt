@@ -56,6 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.component.player.AudioPlayer
 import io.github.andremion.musicplayer.component.time.format
@@ -68,11 +69,16 @@ import io.github.andremion.musicplayer.ui.animation.SlideFromBottom
 import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun PlayerScreen() {
-    val viewModel = koinViewModel(PlayerViewModel::class)
+fun PlayerScreen(playlistId: String) {
+    val viewModel = koinViewModel(PlayerViewModel::class) {
+        parametersOf(playlistId)
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     ScreenContent(uiState, viewModel::onUiEvent)
 }
 
@@ -160,13 +166,15 @@ private fun ScreenContent(
                         text = uiState.currentTrack?.metadata?.title.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = uiState.currentTrack?.metadata?.artist.toString(),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -206,8 +214,8 @@ private fun ScreenContent(
                         playlist = playlist,
                         selectedMusicId = uiState.currentTrack?.id,
                         topBarPaddingTop = PlayButtonSize / 2,
-                        onMusicClick = { index ->
-                            onUiEvent(PlayerUiEvent.MusicClick(index))
+                        onMusicClick = { musicIndex ->
+                            onUiEvent(PlayerUiEvent.MusicClick(musicIndex))
                         }
                     )
                 }

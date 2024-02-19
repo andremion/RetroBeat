@@ -14,20 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.domain.entity
+package io.github.andremion.musicplayer.presentation.discovery
 
-import kotlin.time.Duration
-
-data class Music(
-    val id: String,
-    val uri: String,
-    val title: String,
-    val duration: Duration,
-    val artist: String,
-    val album: Album,
-) {
-    data class Album(
-        val title: String,
-        val picture: Picture,
-    )
+sealed interface DiscoveryUiEffect {
+    data class NavigateToPlayer(val playlistId: String) : DiscoveryUiEffect
 }

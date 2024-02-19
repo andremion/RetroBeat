@@ -31,13 +31,14 @@ import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
 
 class PlayerViewModel(
+    playlistId: String,
     repository: MusicRepository,
     private val audioPlayer: AudioPlayer
 ) : ViewModel() {
 
     private var updateProgressJob: Job? = null
 
-    private val playlist = repository.getPlaylist().onEach { playlist ->
+    private val playlist = repository.getPlaylist(playlistId).onEach { playlist ->
         initializePlayer(playlist)
     }
 
@@ -101,7 +102,7 @@ class PlayerViewModel(
             }
 
             is PlayerUiEvent.MusicClick -> {
-                audioPlayer.play(event.index)
+                audioPlayer.play(trackIndex = event.musicIndex)
             }
         }
     }
@@ -134,7 +135,7 @@ private fun List<Music>.toTracks(): List<AudioPlayer.Track> =
                 title = music.title,
                 artist = music.artist,
                 albumTitle = music.album.title,
-                artworkUri = music.album.art
+                artworkUri = music.album.picture.big
             )
         )
     }

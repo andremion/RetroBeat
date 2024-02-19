@@ -14,20 +14,12 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.domain.entity
+package io.github.andremion.musicplayer.presentation.discovery
 
-import kotlin.time.Duration
+import io.github.andremion.musicplayer.domain.entity.Playlist
 
-data class Music(
-    val id: String,
-    val uri: String,
-    val title: String,
-    val duration: Duration,
-    val artist: String,
-    val album: Album,
-) {
-    data class Album(
-        val title: String,
-        val picture: Picture,
-    )
-}
+data class DiscoveryUiState(
+    val isLoading: Boolean = false,
+    val playlists: List<Playlist>? = null,
+    val error: Throwable? = null
+)

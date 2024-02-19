@@ -29,8 +29,8 @@ class AudioPlayerImpl: AbstractAudioPlayer {
         }
     }
     
-    override func play(index: Int32) {
-        setCurrentItem(index: Int(index))
+    override func play(trackIndex: Int32) {
+        setCurrentItem(index: Int(trackIndex))
         play()
     }
     

@@ -27,13 +27,18 @@ internal class MusicRepositoryImpl(
     private val deezerApi: DeezerApi
 ) : MusicRepository {
 
-    override fun getPlaylist(): Flow<Playlist> =
+    override fun getPlaylists(): Flow<List<Playlist>> =
         flow {
             emit(
                 deezerApi.searchPlaylist(query = "hits")
                     .toEntity()
-                    .first()
-                    .run { deezerApi.getPlaylistById(playlistId = id.toLong()) }
+            )
+        }
+
+    override fun getPlaylist(playlistId: String): Flow<Playlist> =
+        flow {
+            emit(
+                deezerApi.getPlaylistById(playlistId = playlistId.toLong())
                     .toEntity()
             )
         }

@@ -23,7 +23,10 @@ internal data class GetPlaylistByIdResponse(
     val id: Long,
     val title: String,
     val description: String,
+    val picture_small: String,
+    val picture_medium: String,
     val picture_big: String,
+    val picture_xl: String,
     val tracks: Tracks
 ) {
 
@@ -50,7 +53,10 @@ internal data class GetPlaylistByIdResponse(
             @Serializable
             data class Album(
                 val title: String,
-                val cover_big: String
+                val cover_small: String,
+                val cover_medium: String,
+                val cover_big: String,
+                val cover_xl: String
             )
         }
     }

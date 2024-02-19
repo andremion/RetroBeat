@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.Card
@@ -43,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.component.time.format
@@ -56,7 +59,7 @@ fun Playlist(
     playlist: Playlist,
     selectedMusicId: String?,
     topBarPaddingTop: Dp,
-    onMusicClick: (index: Int) -> Unit,
+    onMusicClick: (musicIndex: Int) -> Unit,
 ) {
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -69,6 +72,7 @@ fun Playlist(
                             text = playlist.title,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                         Text(
                             text = "${playlist.musics.size} tracks",
@@ -103,10 +107,10 @@ fun Playlist(
                 val isSelected = music.id == selectedMusicId
                 Card(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .clip(MaterialTheme.shapes.extraSmall)
+                        .padding(start = 16.dp)
+                        .clip(CardShape)
                         .clickable { onMusicClick(index) },
-                    shape = MaterialTheme.shapes.extraSmall,
+                    shape = CardShape,
                     colors = CardDefaults.outlinedCardColors(
                         containerColor = if (isSelected) {
                             MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.38f)
@@ -125,7 +129,7 @@ fun Playlist(
                             modifier = Modifier
                                 .size(56.dp)
                                 .clip(MaterialTheme.shapes.extraSmall),
-                            resource = asyncPainterResource(music.album.art),
+                            resource = asyncPainterResource(music.album.picture.small),
                             contentDescription = "Album art",
                             animationSpec = tween(),
                         )
@@ -154,3 +158,9 @@ fun Playlist(
         }
     }
 }
+
+private val CardShape: CornerBasedShape
+    @Composable get() = MaterialTheme.shapes.extraSmall.copy(
+        topEnd = CornerSize(0.dp),
+        bottomEnd = CornerSize(0.dp)
+    )

@@ -20,5 +20,6 @@ import io.github.andremion.musicplayer.domain.entity.Playlist
 import kotlinx.coroutines.flow.Flow
 
 interface MusicRepository {
-    fun getPlaylist(): Flow<Playlist>
+    fun getPlaylists(): Flow<List<Playlist>>
+    fun getPlaylist(playlistId: String): Flow<Playlist>
 }

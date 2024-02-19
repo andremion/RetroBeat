@@ -16,13 +16,20 @@
 
 package io.github.andremion.musicplayer.presentation.di
 
+import io.github.andremion.musicplayer.presentation.discovery.DiscoveryViewModel
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
 import org.koin.dsl.module
 
 object PresentationModule {
     val module = module {
         factory {
+            DiscoveryViewModel(
+                musicRepository = get()
+            )
+        }
+        factory { parameters ->
             PlayerViewModel(
+                playlistId = parameters.get(),
                 repository = get(),
                 audioPlayer = get()
             )

@@ -28,7 +28,7 @@ interface AudioPlayer {
     fun initialize(onInitialized: () -> Unit)
     fun setTracks(tracks: List<Track>)
     fun play()
-    fun play(index: Int)
+    fun play(trackIndex: Int)
     fun updateProgress()
     fun pause()
     fun skipToPrevious()
