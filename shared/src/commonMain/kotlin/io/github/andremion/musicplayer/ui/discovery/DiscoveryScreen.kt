@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -88,7 +89,7 @@ private fun ScreenContent(
                 }
                 .onSuccess { playlists ->
                     LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
+                        columns = StaggeredGridCells.Adaptive(GridColumnSize),
                         verticalItemSpacing = 8.dp,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(16.dp),
@@ -99,15 +100,14 @@ private fun ScreenContent(
                                     onUiEvent(DiscoveryUiEvent.PlaylistClick(playlist.id))
                                 }
                             ) {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
+                                Column {
                                     KamelImage(
+                                        modifier = Modifier.aspectRatio(1f),
                                         resource = asyncPainterResource(playlist.picture.big),
                                         contentDescription = null
                                     )
                                     Text(
-                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        modifier = Modifier.padding(8.dp),
                                         text = playlist.title,
                                     )
                                 }
@@ -118,3 +118,5 @@ private fun ScreenContent(
         }
     }
 }
+
+private val GridColumnSize = 122.dp
