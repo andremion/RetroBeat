@@ -18,12 +18,8 @@ package io.github.andremion.musicplayer.ui.animation
 
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -49,19 +45,13 @@ interface SceneScope {
      * Animates the bounds (position and size) of the layout within the given LookaheadScope,
      * whenever the relative position changes.
      */
-    fun Modifier.animateBounds(
-        onTransitionStart: () -> Unit = {},
-        onTransitionEnd: () -> Unit = {},
-    ): Modifier
+    fun Modifier.animateBounds(): Modifier
 }
 
 private class SceneScopeImpl : SceneScope {
 
     @OptIn(ExperimentalComposeUiApi::class)
-    override fun Modifier.animateBounds(
-        onTransitionStart: () -> Unit,
-        onTransitionEnd: () -> Unit,
-    ): Modifier = composed {
+    override fun Modifier.animateBounds(): Modifier = composed {
         val coroutineScope = rememberCoroutineScope()
 
         val positionAnimation = remember {
@@ -73,16 +63,6 @@ private class SceneScopeImpl : SceneScope {
             DeferredTargetAnimation(IntSize.VectorConverter)
         }
 
-        // Tracks the running flag of the animations to trigger the callbacks whenever the flag is updated
-        var isAnimationRunning by remember { mutableStateOf<Boolean?>(null) }
-        LaunchedEffect(isAnimationRunning) {
-            if (isAnimationRunning == true) {
-                onTransitionStart()
-            } else if (isAnimationRunning == false) {
-                onTransitionEnd()
-            }
-        }
-
         intermediateLayout { measurable, _ ->
             // When layout changes, the lookahead pass will calculate a new final size for the child layout.
             // This lookahead size can be used to animate the size change,
@@ -90,8 +70,6 @@ private class SceneScopeImpl : SceneScope {
             val animatedSize = sizeAnimation.updateTarget(
                 target = lookaheadSize,
                 coroutineScope = coroutineScope,
-                onAnimationStart = { isAnimationRunning = true },
-                onAnimationEnd = { isAnimationRunning = false }
             )
             val (width, height) = animatedSize
             val animatedConstraints = Constraints.fixed(width, height)
@@ -109,8 +87,6 @@ private class SceneScopeImpl : SceneScope {
                     val animatedPosition = positionAnimation.updateTarget(
                         target = target,
                         coroutineScope = coroutineScope,
-                        onAnimationStart = { isAnimationRunning = true },
-                        onAnimationEnd = { isAnimationRunning = false }
                     )
                     // Calculates the *current* position within the given LookaheadScope
                     val placementOffset = lookaheadScopeCoordinates.localPositionOf(

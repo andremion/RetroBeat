@@ -67,16 +67,12 @@ class DeferredTargetAnimation<T, V : AnimationVector>(
         target: T,
         coroutineScope: CoroutineScope,
         animationSpec: FiniteAnimationSpec<T> = spring(),
-        onAnimationStart: (() -> Unit)? = null,
-        onAnimationEnd: (() -> Unit)? = null
     ): T {
         _pendingTarget = target
         val anim = animatable ?: Animatable(target, vectorConverter).also { animatable = it }
         coroutineScope.launch {
             if (anim.targetValue != _pendingTarget) {
-                onAnimationStart?.invoke()
                 anim.animateTo(target, animationSpec)
-                onAnimationEnd?.invoke()
             }
         }
         return anim.value

@@ -21,7 +21,9 @@ import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.github.andremion.musicplayer.presentation.AsyncContent
 
 data class PlayerUiState(
+    val seekBackIncrement: String = "",
+    val seekForwardIncrement: String = "",
     val playlist: AsyncContent<Playlist> = AsyncContent.loading(),
-    val playerState: AudioPlayer.State = AudioPlayer.State(),
     val currentTrack: AudioPlayer.Track? = null,
+    val playerState: AudioPlayer.State = AudioPlayer.State(),
 )

@@ -57,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.component.player.AudioPlayer
@@ -83,11 +84,14 @@ fun PlayerScreen(playlistId: String) {
     ScreenContent(uiState, viewModel::onUiEvent)
 }
 
-private enum class PlayingState {
-    Idle, Playing, Pausing, Paused;
+private enum class TransitionState {
+    Initial, ToPlaying, Playing, ToPaused, Paused;
 
     val isPlaying: Boolean
-        get() = this == Playing || this == Pausing
+        get() = this == Playing || this == ToPlaying || this == ToPaused
+
+    val isTransitioning: Boolean
+        get() = this == ToPlaying || this == ToPaused
 }
 
 @Composable
@@ -102,21 +106,26 @@ private fun ScreenContent(
                 .fillMaxSize(),
         ) {
 
-            var playingState by remember { mutableStateOf(PlayingState.Idle) }
+            var transitionState by remember { mutableStateOf(TransitionState.Initial) }
             LaunchedEffect(uiState.playerState.isPlaying) {
                 if (uiState.playerState.isPlaying) {
-                    playingState = PlayingState.Playing
+                    transitionState = TransitionState.ToPlaying
                 } else {
-                    if (playingState != PlayingState.Idle) {
-                        playingState = PlayingState.Pausing
+                    if (transitionState != TransitionState.Initial) {
+                        transitionState = TransitionState.ToPaused
                     }
                 }
             }
-            val isPlaying = playingState.isPlaying
 
             val sceneTransition by animateFloatAsState(
-                targetValue = if (isPlaying) 1f else 0f,
+                targetValue = if (transitionState.isPlaying) 1f else 0f,
             )
+
+            LaunchedEffect(sceneTransition, transitionState) {
+                if (sceneTransition == 1f && transitionState == TransitionState.ToPlaying) {
+                    transitionState = TransitionState.Playing
+                }
+            }
 
             val trackArtwork = uiState.currentTrack?.metadata?.artworkUri.toString()
             val cover = rememberMovableContent(trackArtwork) { modifier ->
@@ -124,33 +133,27 @@ private fun ScreenContent(
                     modifier = modifier.animateBounds(),
                     uri = trackArtwork,
                     transition = sceneTransition,
-                    rotate = playingState == PlayingState.Playing,
-                    onRotationEnd = { playingState = PlayingState.Paused }
+                    rotate = transitionState == TransitionState.Playing,
+                    onRotationEnd = { transitionState = TransitionState.Paused }
                 )
             }
 
-            val playButton = rememberMovableContent(isPlaying) { modifier ->
+            val playPauseButton = rememberMovableContent { modifier ->
                 FloatingActionButton(
                     modifier = modifier
                         .size(PlayButtonSize)
                         .animateBounds(),
                     shape = CircleShape,
-                    onClick = {
-                        if (isPlaying) {
-                            onUiEvent(PlayerUiEvent.PauseClick)
-                        } else {
-                            onUiEvent(PlayerUiEvent.PlayClick)
-                        }
-                    },
+                    onClick = { onUiEvent(PlayerUiEvent.PlayPauseClick) }
                 ) {
                     Icon(
                         modifier = Modifier.size(SmallIconSize),
-                        imageVector = if (isPlaying) {
+                        imageVector = if (transitionState.isPlaying) {
                             Icons.Rounded.Pause
                         } else {
                             Icons.Rounded.PlayArrow
                         },
-                        contentDescription = if (isPlaying) {
+                        contentDescription = if (transitionState.isPlaying) {
                             "Pause"
                         } else {
                             "Play"
@@ -160,30 +163,39 @@ private fun ScreenContent(
             }
 
             val title = uiState.currentTrack?.metadata?.title.toString()
-            val artist = uiState.currentTrack?.metadata?.artist.toString()
-            val headline = rememberMovableContent(title, artist) { modifier ->
-                Column(
+            val titleText = rememberMovableContent(title) { modifier ->
+                Text(
                     modifier = modifier.animateBounds(),
-                    horizontalAlignment = if (isPlaying) Alignment.CenterHorizontally else Alignment.Start,
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = artist,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
-            val time = uiState.playerState.time.format()
+            val artist = uiState.currentTrack?.metadata?.artist.toString()
+            val artistText = rememberMovableContent(artist) { modifier ->
+                Text(
+                    modifier = modifier.animateBounds(),
+                    text = artist,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            var time by remember { mutableStateOf("") }
+            LaunchedEffect(uiState.playerState.time) {
+                // Only update the time if it is not transitioning.
+                // This is to avoid the UI glitching during the transition,
+                // because the movable content is gonna re-compose whenever the time changes.
+                if (!transitionState.isTransitioning) {
+                    time = uiState.playerState.time.format()
+                }
+            }
             val timeText = rememberMovableContent(time) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
@@ -203,7 +215,15 @@ private fun ScreenContent(
                 )
             }
 
-            val position = uiState.playerState.position
+            var position by remember { mutableStateOf(0f) }
+            LaunchedEffect(uiState.playerState.position) {
+                // Only update the position if it is not transitioning.
+                // This is to avoid the UI glitching during the transition,
+                // because the movable content is gonna re-compose whenever the position changes.
+                if (!transitionState.isTransitioning) {
+                    position = uiState.playerState.position
+                }
+            }
             val timeBar = rememberMovableContent(position) { modifier ->
                 TimeBar(
                     modifier = modifier.animateBounds(),
@@ -216,7 +236,7 @@ private fun ScreenContent(
                 modifier = Modifier
                     .padding(top = CoverHeight)
                     .align(Alignment.Center),
-                visible = !isPlaying
+                visible = !transitionState.isPlaying
             ) {
                 uiState.playlist
                     .onLoading { CircularProgressIndicator() }
@@ -236,7 +256,7 @@ private fun ScreenContent(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(top = CoverHeight * 1.3f),
-                visible = isPlaying,
+                visible = transitionState.isPlaying,
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -280,7 +300,7 @@ private fun ScreenContent(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
-                visible = isPlaying,
+                visible = transitionState.isPlaying,
             ) {
                 Row(
                     modifier = Modifier
@@ -309,7 +329,7 @@ private fun ScreenContent(
                             )
                             Text(
                                 modifier = Modifier.padding(top = 6.dp),
-                                text = uiState.playerState.seekBackIncrement.toString(),
+                                text = uiState.seekBackIncrement,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -329,7 +349,7 @@ private fun ScreenContent(
                             )
                             Text(
                                 modifier = Modifier.padding(top = 6.dp),
-                                text = uiState.playerState.seekForwardIncrement.toString(),
+                                text = uiState.seekForwardIncrement,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -346,10 +366,9 @@ private fun ScreenContent(
                 }
             }
 
-            if (isPlaying) {
+            if (transitionState.isPlaying) {
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.Center),
+                    modifier = Modifier.align(Alignment.Center),
                     contentAlignment = Alignment.Center,
                 ) {
                     cover(
@@ -359,24 +378,26 @@ private fun ScreenContent(
                             .aspectRatio(1f)
                     )
                     Row(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .padding(horizontal = 50.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Bottom,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        horizontalArrangement = Arrangement.spacedBy(CoverHeight / 2),
                     ) {
                         timeText(Modifier)
                         durationText(Modifier)
                     }
                     timeBar(Modifier.matchParentSize())
-                    playButton(Modifier)
+                    playPauseButton(Modifier)
                 }
-                headline(
-                    Modifier
+                Column(
+                    modifier = Modifier
                         .statusBarsPadding()
                         .padding(16.dp)
-                        .align(Alignment.TopCenter)
-                )
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    titleText(Modifier)
+                    artistText(Modifier)
+                }
             } else {
                 Box {
                     cover(
@@ -393,7 +414,8 @@ private fun ScreenContent(
                                 vertical = 8.dp
                             )
                     ) {
-                        headline(Modifier)
+                        titleText(Modifier)
+                        artistText(Modifier)
                         Row(
                             modifier = Modifier.padding(end = 16.dp + PlayButtonSize),
                             verticalAlignment = Alignment.CenterVertically,
@@ -404,7 +426,7 @@ private fun ScreenContent(
                             durationText(Modifier)
                         }
                     }
-                    playButton(
+                    playPauseButton(
                         Modifier
                             .align(Alignment.BottomEnd)
                             .padding(horizontal = 16.dp)

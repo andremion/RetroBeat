@@ -36,6 +36,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+private const val DEFAULT_SEEK_BACK_INCREMENT = 5
+private const val DEFAULT_SEEK_FORWARD_INCREMENT = 15
+
 internal class AudioPlayerImpl(
     private val context: Context
 ) : AudioPlayer {
@@ -50,6 +53,19 @@ internal class AudioPlayerImpl(
     }
     private val player: Player
         get() = controllerFuture.get()
+
+    override val seekBackIncrementInSeconds: Int
+        get() = if (controllerFuture.isDone) {
+            (player.seekBackIncrement / 1_000).toInt()
+        } else {
+            DEFAULT_SEEK_BACK_INCREMENT
+        }
+    override val seekForwardIncrementInSeconds: Int
+        get() = if (controllerFuture.isDone) {
+            (player.seekForwardIncrement / 1_000).toInt()
+        } else {
+            DEFAULT_SEEK_FORWARD_INCREMENT
+        }
 
     private val mutableState = MutableStateFlow(AudioPlayer.State())
     override val state: StateFlow<AudioPlayer.State> = mutableState.asStateFlow()
@@ -79,23 +95,19 @@ internal class AudioPlayerImpl(
         player.prepare()
     }
 
-    override fun play() {
-        Util.handlePlayButtonAction(player)
+    override fun playPause() {
+        Util.handlePlayPauseButtonAction(player)
     }
 
     override fun play(trackIndex: Int) {
         if (player.isCommandAvailable(Player.COMMAND_SEEK_TO_MEDIA_ITEM)) {
             player.seekToDefaultPosition(trackIndex)
-            play()
+            playPause()
         }
     }
 
     override fun updateProgress() {
         listener.updateProgress()
-    }
-
-    override fun pause() {
-        Util.handlePauseButtonAction(player)
     }
 
     override fun skipToPrevious() {

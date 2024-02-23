@@ -22,30 +22,30 @@ import kotlin.time.Duration.Companion.milliseconds
 
 interface AudioPlayer {
 
+    val seekBackIncrementInSeconds: Int
+    val seekForwardIncrementInSeconds: Int
+
     val state: StateFlow<State>
     val currentTrack: StateFlow<Track?>
 
     fun initialize(onInitialized: () -> Unit)
     fun setTracks(tracks: List<Track>)
-    fun play()
+    fun playPause()
     fun play(trackIndex: Int)
     fun updateProgress()
-    fun pause()
     fun skipToPrevious()
     fun skipToNext()
     fun seekBackward()
     fun seekForward()
     fun toggleRepeatMode()
     fun toggleShuffleMode()
-    fun releasePlayer() // There is a `release` function in ObjectiveC.NSObject already. So I had to use a Player suffix.
+    fun releasePlayer() // There is a `release` function in ObjectiveC.NSObject already. So I had to use the `Player` suffix.
 
     data class State(
-        val seekBackIncrement: Int = 5,
-        val seekForwardIncrement: Int = 15,
         val isPlaying: Boolean = false,
         val position: Float = -0f,
-        val time: Duration = 0.milliseconds,
-        val duration: Duration = 0.milliseconds,
+        val time: Duration = (-0).milliseconds,
+        val duration: Duration = (-0).milliseconds,
         val repeatMode: RepeatMode = RepeatMode.Off,
         val isShuffleModeOn: Boolean = false,
     )

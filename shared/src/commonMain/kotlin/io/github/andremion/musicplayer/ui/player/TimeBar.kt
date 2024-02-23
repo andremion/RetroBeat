@@ -36,11 +36,6 @@ fun TimeBar(
     position: Float,
     transition: Float
 ) {
-//    val coercedPosition by animateFloatAsState(
-//        label = "position",
-//        targetValue = position.coerceIn(0f, 1f),
-//        animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
-//    )
     val coercedPosition = position.coerceIn(0f, 1f)
 
     val trackColor = ProgressIndicatorDefaults.linearTrackColor
