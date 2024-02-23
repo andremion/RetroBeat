@@ -16,11 +16,8 @@
 
 package io.github.andremion.musicplayer.ui.player
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -39,11 +36,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.isActive
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-private const val HALF_OF_FULL_ANGLE = 180f
-private const val FULL_ANGLE = 360f
+private const val INITIAL_ROTATION_ANGLE = 0f
+private const val FULL_ROTATION_ANGLE = 360f
 
 @Composable
 fun MusicCover(
@@ -53,21 +51,32 @@ fun MusicCover(
     rotate: Boolean,
     onRotationEnd: () -> Unit = {}
 ) {
-    val rotation by rememberInfiniteTransition().animateFloat(
-        label = "rotation",
-        initialValue = 0f,
-        targetValue = if (rotate) FULL_ANGLE else 0f,
-        animationSpec = infiniteRepeatable(animation = tween(durationMillis = 2_000, easing = LinearEasing))
-    )
-
-    var endRotationAnimation by remember { mutableStateOf(Animatable(0f)) }
+    var rotation by remember { mutableStateOf(INITIAL_ROTATION_ANGLE) }
 
     LaunchedEffect(rotate) {
-        // Choose the shortest distance to the 0 rotation
-        val targetAngle = if (rotation > HALF_OF_FULL_ANGLE) FULL_ANGLE else 0f
-        if (!rotate && targetAngle != rotation) {
-            endRotationAnimation = Animatable(rotation)
-            endRotationAnimation.animateTo(targetAngle, animationSpec = tween(durationMillis = 500))
+        if (rotate) {
+            // Rotate clockwise repeatedly
+            while (isActive) {
+                animate(
+                    initialValue = 0f,
+                    targetValue = FULL_ROTATION_ANGLE,
+                    animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
+                ) { value, _ ->
+                    rotation = value
+                }
+            }
+        } else if (rotation != INITIAL_ROTATION_ANGLE) {
+            // Choose the shortest distance to the 0 rotation.
+            // If the current rotation is greater than 180, rotate clockwise.
+            // Otherwise rotate counter-clockwise.
+            val targetAngle = if (rotation > FULL_ROTATION_ANGLE / 2f) FULL_ROTATION_ANGLE else 0f
+            animate(
+                initialValue = rotation,
+                targetValue = targetAngle,
+                animationSpec = tween(durationMillis = 500, easing = LinearEasing)
+            ) { value, _ ->
+                rotation = value
+            }
             onRotationEnd()
         }
     }
@@ -75,7 +84,7 @@ fun MusicCover(
     KamelImage(
         modifier = modifier
             .graphicsLayer {
-                rotationZ = if (endRotationAnimation.isRunning) endRotationAnimation.value else rotation
+                rotationZ = rotation
                 shape = RoundedCornerShape((SHAPE_CORNER_PERCENT * transition).toInt())
                 clip = true
             }
