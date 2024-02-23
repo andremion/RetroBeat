@@ -10,7 +10,11 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     private var tracks: Array<AudioPlayerTrack> = Array()
     private var timeObserverToken: Any? = nil
     
+    override var seekBackIncrementInSeconds: Int32 { 5 }
+    override var seekForwardIncrementInSeconds: Int32 { 15 }
+    
     override func initialize(onInitialized: @escaping () -> Void) {
+        // iOS doesn't need to asynchronously initialize anything so far
         onInitialized()
     }
     
@@ -19,7 +23,17 @@ class AudioPlayerImpl: AbstractAudioPlayer {
         setCurrentItem(index: 0)
     }
     
-    override func play() {
+    override func playPause() {
+        if let state = state.value as? AudioPlayerState {
+            if (state.isPlaying) {
+                pause()
+            } else {
+                play()
+            }
+        }
+    }
+    
+    private func play() {
         if let player = player {
             player.play()
             updateState { state in
@@ -35,29 +49,21 @@ class AudioPlayerImpl: AbstractAudioPlayer {
     }
     
     override func updateProgress() {
-        Task.init {
-            do {
-                if let player = player {
-                    if let currentItem = player.currentItem {
-                        let duration = try await currentItem.asset.load(.duration)
-                        updateState { state in
-                            state.copy(
-                                position: Float(player.currentTime().seconds / duration.seconds),
-                                time: DurationKt
-                                    .toDuration(milliseconds: player.currentTime().seconds.rounded() * 1_000),
-                                duration: DurationKt
-                                    .toDuration(milliseconds: duration.seconds.rounded() * 1_000)
-                            )
-                        }
-                    }
+        if let player = player {
+            if let currentItem = player.currentItem {
+                updateState { state in
+                    NSLog("currentTime.seconds: \(player.currentTime().seconds), duration: \(currentItem.duration.seconds)")
+                    return state.copy(
+                        position: Float(player.currentTime().seconds / currentItem.duration.seconds),
+                        time: DurationKt
+                            .toDuration(milliseconds: player.currentTime().seconds.rounded() * 1_000)
+                    )
                 }
-            } catch {
-                NSLog("Error on fetching player item duration")
             }
         }
     }
     
-    override func pause() {
+    private func pause() {
         if let player = player {
             player.pause()
             updateState { state in
@@ -134,8 +140,30 @@ class AudioPlayerImpl: AbstractAudioPlayer {
                 NSLog("Error on fetching player item duration")
             }
         }*/
+
+        updateDuration()
         
         updateProgress()
+    }
+    
+    private func updateDuration() {
+        Task.init {
+            do {
+                if let player = player {
+                    if let currentItem = player.currentItem {
+                        let duration = try await currentItem.asset.load(.duration)
+                        updateState { state in
+                            state.copy(
+                                duration: DurationKt
+                                    .toDuration(milliseconds: duration.seconds.rounded() * 1_000)
+                            )
+                        }
+                    }
+                }
+            } catch {
+                NSLog("Error on fetching player item duration")
+            }
+        }
     }
 
     /*private func activateSession() {
@@ -166,11 +194,9 @@ class AudioPlayerImpl: AbstractAudioPlayer {
 }
 
 private extension AudioPlayerState {
-
+    
     func copy(isPlaying: Bool) -> AudioPlayerState {
         AudioPlayerState(
-            seekBackIncrement: self.seekBackIncrement,
-            seekForwardIncrement: self.seekForwardIncrement,
             isPlaying: isPlaying,
             position: self.position,
             time: self.time,
@@ -179,15 +205,24 @@ private extension AudioPlayerState {
             isShuffleModeOn: self.isShuffleModeOn
         )
     }
-
-    func copy(position: Float, time: Int64, duration: Int64) -> AudioPlayerState {
+    
+    func copy(duration: Int64) -> AudioPlayerState {
         AudioPlayerState(
-            seekBackIncrement: self.seekBackIncrement,
-            seekForwardIncrement: self.seekForwardIncrement,
+            isPlaying: self.isPlaying,
+            position: self.position,
+            time: self.time,
+            duration: duration,
+            repeatMode: self.repeatMode,
+            isShuffleModeOn: self.isShuffleModeOn
+        )
+    }
+    
+    func copy(position: Float, time: Int64) -> AudioPlayerState {
+        AudioPlayerState(
             isPlaying: self.isPlaying,
             position: position,
             time: time,
-            duration: duration,
+            duration: self.duration,
             repeatMode: self.repeatMode,
             isShuffleModeOn: self.isShuffleModeOn
         )
