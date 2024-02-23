@@ -37,11 +37,14 @@ import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.isActive
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val INITIAL_ROTATION_ANGLE = 0f
 private const val FULL_ROTATION_ANGLE = 360f
+private const val HALF_OF_FULL_ROTATION_ANGLE = FULL_ROTATION_ANGLE / 2f
+private const val ROTATION_END_DURATION = 500
 
 @Composable
 fun MusicCover(
@@ -69,11 +72,16 @@ fun MusicCover(
             // Choose the shortest distance to the 0 rotation.
             // If the current rotation is greater than 180, rotate clockwise.
             // Otherwise rotate counter-clockwise.
-            val targetAngle = if (rotation > FULL_ROTATION_ANGLE / 2f) FULL_ROTATION_ANGLE else 0f
+            val targetAngle = if (rotation > HALF_OF_FULL_ROTATION_ANGLE) FULL_ROTATION_ANGLE else 0f
+            // Make sure the duration is proportional to the remaining rotation angle.
+            val durationMillis = (abs(targetAngle - rotation)
+                * ROTATION_END_DURATION
+                / HALF_OF_FULL_ROTATION_ANGLE
+                ).roundToInt()
             animate(
                 initialValue = rotation,
                 targetValue = targetAngle,
-                animationSpec = tween(durationMillis = 500, easing = LinearEasing)
+                animationSpec = tween(durationMillis = durationMillis, easing = LinearEasing)
             ) { value, _ ->
                 rotation = value
             }
