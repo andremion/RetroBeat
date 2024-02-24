@@ -1,8 +1,22 @@
+<img alt="Icon" src="https://github.com/andremion/RetroBeat/blob/10eeb0bf743224c36f43d753af785d0b89eea893/androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" width=100>
+
 # RetroBeat
 
 Android|iOS
 -|-
 ![retrobeat_android-ezgif com-video-to-gif-converter](https://github.com/andremion/RetroBeat/assets/12762356/f163378b-38b9-45c6-ab47-8095f5780a32)|![retrobeat_ios-ezgif com-video-to-gif-converter](https://github.com/andremion/RetroBeat/assets/12762356/ddc6c154-16d3-4932-8ccd-1a6f5e518972)
+
+## Data source
+
+Currently fetching playlists from [Deezer API](https://developers.deezer.com/api/explorer) but flexible enough to change to another one.
+
+## TODO
+
+- [ ] Cache the selected playlist
+- [ ] Move hardcoded strings to resources
+- [ ] Navigate directly to the selected playlist from the launcher
+- [ ] Add integration tests
+- [ ] Add better transition from the playlist to the player screen
 
 ## References
 
