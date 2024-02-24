@@ -16,15 +16,14 @@
 
 package io.github.andremion.musicplayer.ui.theme
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.ui.graphics.Color
 
-@Composable
-fun AppTheme(
-    content: @Composable () -> Unit
-) {
-    MaterialTheme(
-        colorScheme = ColorScheme,
-        content = content
-    )
-}
+private val PrimaryColor = Color(0xFFF36616)
+
+internal val ColorScheme = darkColorScheme(
+    primary = PrimaryColor,
+    onPrimary = Color.White,
+    primaryContainer = PrimaryColor,
+    onPrimaryContainer = Color.White,
+)
