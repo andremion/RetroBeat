@@ -15,6 +15,7 @@ precompose = "1.5.10"
 kamel-image = "0.9.2"
 ktor = "2.3.8"
 napier = "2.7.1"
+compottie = "1.1.0"
 
 [libraries]
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -39,6 +40,7 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 napier = { group = "io.github.aakira", name = "napier", version.ref = "napier" }
+compottie = { group = "io.github.alexzhirkevich", name = "compottie", version.ref = "compottie" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -33,8 +33,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Replay
@@ -60,14 +58,17 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.alexzhirkevich.compottie.LottieAnimation
 import io.github.andremion.musicplayer.component.player.AudioPlayer
 import io.github.andremion.musicplayer.component.time.format
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
 import io.github.andremion.musicplayer.presentation.player.PlayerUiState
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
 import io.github.andremion.musicplayer.ui.animation.Fade
+import io.github.andremion.musicplayer.ui.animation.LottieCompositionSpec
 import io.github.andremion.musicplayer.ui.animation.SceneRoot
 import io.github.andremion.musicplayer.ui.animation.SlideFromBottom
+import io.github.andremion.musicplayer.ui.animation.rememberLottieComposition
 import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
@@ -146,18 +147,18 @@ private fun ScreenContent(
                     shape = CircleShape,
                     onClick = { onUiEvent(PlayerUiEvent.PlayPauseClick) }
                 ) {
-                    Icon(
+                    val composition by rememberLottieComposition(
+                        spec = LottieCompositionSpec.AnimationRes(name = "play_pause_animation")
+                    )
+                    var speed by remember { mutableStateOf(1f) }
+                    LaunchedEffect(transitionState.isPlaying) {
+                        // Negative speed to reverse the animation when pausing.
+                        speed = if (transitionState.isPlaying) 1f else -1f
+                    }
+                    LottieAnimation(
                         modifier = Modifier.size(SmallIconSize),
-                        imageVector = if (transitionState.isPlaying) {
-                            Icons.Rounded.Pause
-                        } else {
-                            Icons.Rounded.PlayArrow
-                        },
-                        contentDescription = if (transitionState.isPlaying) {
-                            "Pause"
-                        } else {
-                            "Play"
-                        },
+                        composition = composition,
+                        speed = speed,
                     )
                 }
             }

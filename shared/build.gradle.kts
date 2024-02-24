@@ -29,6 +29,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
+            implementation(compose.components.resources)
 
             implementation(libs.kotlinx.coroutines)
             implementation(libs.kotlinx.serialization.core)
@@ -44,6 +45,7 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.json)
             implementation(libs.napier)
+            implementation(libs.compottie)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
