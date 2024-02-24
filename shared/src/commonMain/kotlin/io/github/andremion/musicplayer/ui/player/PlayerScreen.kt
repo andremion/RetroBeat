@@ -150,15 +150,11 @@ private fun ScreenContent(
                     val composition by rememberLottieComposition(
                         spec = LottieCompositionSpec.AnimationRes(name = "play_pause_animation")
                     )
-                    var speed by remember { mutableStateOf(1f) }
-                    LaunchedEffect(transitionState.isPlaying) {
-                        // Negative speed to reverse the animation when pausing.
-                        speed = if (transitionState.isPlaying) 1f else -1f
-                    }
                     LottieAnimation(
                         modifier = Modifier.size(SmallIconSize),
                         composition = composition,
-                        speed = speed,
+                        // Negative speed to reverse the animation when pausing.
+                        speed = if (transitionState.isPlaying) 1f else -1f,
                     )
                 }
             }
