@@ -52,7 +52,7 @@ class AudioPlayerImpl: AbstractAudioPlayer {
         if let player = player {
             if let currentItem = player.currentItem {
                 updateState { state in
-                    NSLog("currentTime.seconds: \(player.currentTime().seconds), duration: \(currentItem.duration.seconds)")
+                    NSLog("currentTime: \(player.currentTime().seconds.rounded()), duration: \(currentItem.duration.seconds.rounded())")
                     return state.copy(
                         position: Float(player.currentTime().seconds / currentItem.duration.seconds),
                         time: DurationKt
@@ -75,13 +75,13 @@ class AudioPlayerImpl: AbstractAudioPlayer {
 
     override func skipToPrevious() {
         if (currentItemIndex > 0) {
-            setCurrentItem(index: currentItemIndex - 1)
+            play(trackIndex: Int32(currentItemIndex - 1))
         }
     }
 
     override func skipToNext() {
         if (currentItemIndex < tracks.count - 1) {
-            setCurrentItem(index: currentItemIndex + 1)
+            play(trackIndex: Int32(currentItemIndex + 1))
         }
     }
 
@@ -119,28 +119,12 @@ class AudioPlayerImpl: AbstractAudioPlayer {
             self.timeObserverToken = nil
         }
         if let player = player {
+            player.pause()
             player.replaceCurrentItem(with: playerItem)
         } else {
             player = AVPlayer(playerItem: playerItem)
         }
         
-        /*Task.init {
-            do {
-                let duration = try await playerItem.asset.load(.duration)
-                let interval = CMTimeMultiplyByFloat64(duration, multiplier: 1.0)
-                NSLog("duration=\(duration), interval=\(interval)")
-                timeObserverToken = player?.addBoundaryTimeObserver(
-                    forTimes: [NSValue(time: interval)],
-                    queue: .main
-                ) { [weak self] in
-                    NSLog("Here")
-                    self?.skipToNext()
-                }
-            } catch {
-                NSLog("Error on fetching player item duration")
-            }
-        }*/
-
         updateDuration()
         
         updateProgress()
@@ -152,6 +136,14 @@ class AudioPlayerImpl: AbstractAudioPlayer {
                 if let player = player {
                     if let currentItem = player.currentItem {
                         let duration = try await currentItem.asset.load(.duration)
+                        let interval = CMTimeMultiplyByFloat64(duration, multiplier: 1.0)
+                        NSLog("duration=\(duration.seconds.rounded()), interval=\(interval.seconds.rounded())")
+                        timeObserverToken = player.addBoundaryTimeObserver(
+                            forTimes: [NSValue(time: interval)],
+                            queue: .main
+                        ) { [weak self] in
+                            self?.skipToNext()
+                        }
                         updateState { state in
                             state.copy(
                                 duration: DurationKt
