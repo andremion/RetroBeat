@@ -1,5 +1,9 @@
 # RetroBeat
 
+Android|iOS
+-|-
+![retrobeat_android-ezgif com-video-to-gif-converter](https://github.com/andremion/RetroBeat/assets/12762356/f163378b-38b9-45c6-ab47-8095f5780a32)|![retrobeat_ios-ezgif com-video-to-gif-converter](https://github.com/andremion/RetroBeat/assets/12762356/ddc6c154-16d3-4932-8ccd-1a6f5e518972)
+
 ## References
 
 - [Quick guide to Animations in Compose](https://developer.android.com/jetpack/compose/animation/quick-guide)
