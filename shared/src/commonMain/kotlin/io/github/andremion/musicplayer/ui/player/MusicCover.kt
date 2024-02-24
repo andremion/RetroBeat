@@ -56,6 +56,10 @@ fun MusicCover(
 ) {
     var rotation by remember { mutableStateOf(INITIAL_ROTATION_ANGLE) }
 
+    // This is used to avoid the rotation end callback when the composable is first composed
+    // with rotate = false.
+    var isInitialComposition by remember { mutableStateOf(true) }
+
     LaunchedEffect(rotate) {
         if (rotate) {
             // Rotate clockwise repeatedly
@@ -68,7 +72,7 @@ fun MusicCover(
                     rotation = value
                 }
             }
-        } else if (rotation != INITIAL_ROTATION_ANGLE) {
+        } else if (!isInitialComposition) {
             // Choose the shortest distance to the 0 rotation.
             // If the current rotation is greater than 180, rotate clockwise.
             // Otherwise rotate counter-clockwise.
@@ -87,6 +91,11 @@ fun MusicCover(
             }
             onRotationEnd()
         }
+    }
+
+    LaunchedEffect(true) {
+        // After the initial composition we can set this to false and keep it that way.
+        isInitialComposition = false
     }
 
     KamelImage(
