@@ -69,6 +69,7 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun setTracks(tracks: List<AudioPlayer.Track>) {
+        require(tracks.isNotEmpty()) { "Tracks list must not be empty" }
         this.tracks = tracks
         setCurrentItem(index = 0)
     }

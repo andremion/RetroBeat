@@ -184,15 +184,7 @@ private fun ScreenContent(
                 )
             }
 
-            var time by remember { mutableStateOf("") }
-            LaunchedEffect(uiState.playerState.time) {
-                // Only update the time if it is not transitioning.
-                // This is to avoid the UI glitching during the transition,
-                // because the movable content is gonna re-compose whenever the time changes.
-                if (!transitionState.isTransitioning) {
-                    time = uiState.playerState.time.format()
-                }
-            }
+            val time = uiState.playerState.time.format()
             val timeText = rememberMovableContent(time) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),

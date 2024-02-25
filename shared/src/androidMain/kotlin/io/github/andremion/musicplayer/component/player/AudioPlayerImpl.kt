@@ -85,6 +85,7 @@ internal class AudioPlayerImpl(
     }
 
     override fun setTracks(tracks: List<AudioPlayer.Track>) {
+        require(tracks.isNotEmpty()) { "Tracks list must not be empty" }
         if (!controllerFuture.isDone) error("MediaController is not initialized yet")
 
         player.clearMediaItems()
