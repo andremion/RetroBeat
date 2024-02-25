@@ -51,6 +51,9 @@ interface AudioPlayer {
         val duration: Duration = (-0).milliseconds,
         val repeatMode: RepeatMode = RepeatMode.Off,
         val isShuffleModeOn: Boolean = false,
+        // It can be used to emit state even if the state is the same.
+        // This is useful for the update progress function to work properly.
+        val timestamp: Long = 0,
     )
 
     data class Track(

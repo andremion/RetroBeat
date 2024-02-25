@@ -16,14 +16,13 @@
 
 package io.github.andremion.musicplayer.component.player
 
-import io.github.aakira.napier.Napier
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import platform.AVFoundation.AVKeyValueStatusLoaded
+import kotlinx.datetime.Clock
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
@@ -45,8 +44,7 @@ import platform.Foundation.NSValue
 import platform.darwin.dispatch_get_main_queue
 import kotlin.time.Duration.Companion.seconds
 
-private const val LogTag = "AudioPlayer"
-
+@OptIn(ExperimentalForeignApi::class)
 internal class AudioPlayerImpl : AudioPlayer {
 
     private var player = AVPlayer()
@@ -83,18 +81,24 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun play(trackIndex: Int) {
-        setCurrentItem(index = trackIndex)
-        play()
+        setCurrentItem(index = trackIndex) {
+            play()
+        }
     }
 
-    @OptIn(ExperimentalForeignApi::class)
     override fun updateProgress() {
-        mutableState.update { state ->
-            val currentTime = CMTimeGetSeconds(player.currentTime()).seconds
-            state.copy(
-                position = (currentTime / state.duration).toFloat(),
-                time = currentTime,
-            )
+        player.currentItem?.let { currentItem ->
+            mutableState.update { state ->
+                val currentTime = CMTimeGetSeconds(player.currentTime()).seconds
+                val duration = CMTimeGetSeconds(currentItem.asset.duration).seconds
+                state.copy(
+                    position = (currentTime / state.duration).toFloat(),
+                    time = currentTime,
+                    duration = duration,
+                    // Make sure the state is gonna be emitted even if the state is the same.
+                    timestamp = Clock.System.now().toEpochMilliseconds(),
+                )
+            }
         }
     }
 
@@ -107,6 +111,8 @@ internal class AudioPlayerImpl : AudioPlayer {
     override fun skipToNext() {
         if (currentItemIndex < tracks.size - 1) {
             play(trackIndex = currentItemIndex + 1)
+        } else {
+            pause()
         }
     }
 
@@ -146,14 +152,8 @@ internal class AudioPlayerImpl : AudioPlayer {
         updateProgress()
     }
 
-    private fun setCurrentItem(index: Int) {
+    private fun setCurrentItem(index: Int, onLoaded: () -> Unit = {}) {
         currentItemIndex = index
-
-        val currentTrack = tracks[index]
-        mutableTrack.update { currentTrack }
-
-        val url = URLWithString(currentTrack.uri)!!
-        val playerItem = AVPlayerItem(url)
 
         // Remove any previous time observer
         timeObserverToken?.let { timeObserverToken ->
@@ -161,34 +161,22 @@ internal class AudioPlayerImpl : AudioPlayer {
             this.timeObserverToken = null
         }
 
-        player.pause()
-        player.replaceCurrentItemWithPlayerItem(playerItem)
+        val currentTrack = tracks[index]
+        mutableTrack.update { currentTrack }
 
-        updateDuration()
-        updateProgress()
-    }
-
-    @OptIn(ExperimentalForeignApi::class)
-    private fun updateDuration() {
-        player.currentItem?.let { currentItem ->
-            currentItem.asset.loadValuesAsynchronouslyForKeys(listOf("duration")) {
-                if (currentItem.asset.statusOfValueForKey("duration", null) != AVKeyValueStatusLoaded) {
-                    Napier.w("Error on loading duration", tag = LogTag)
-                } else {
-                    // Skip to next track when the current one ends
-                    scheduleSkipToNextOnEndPlaying(duration = currentItem.asset.duration)
-                    mutableState.update { state ->
-                        state.copy(
-                            duration = CMTimeGetSeconds(currentItem.asset.duration).seconds,
-                        )
-                    }
-                }
+        val url = URLWithString(currentTrack.uri)!!
+        AVPlayerItem(url).apply {
+            player.replaceCurrentItemWithPlayerItem(this)
+            asset.loadValuesAsynchronouslyForKeys(listOf("duration")) {
+                // Skip to the next track when the current one ends
+                scheduleNextSkipOnEndPlaying(duration = asset.duration)
+                updateProgress()
+                onLoaded()
             }
         }
     }
 
-    @OptIn(ExperimentalForeignApi::class)
-    private fun scheduleSkipToNextOnEndPlaying(duration: CValue<CMTime>) {
+    private fun scheduleNextSkipOnEndPlaying(duration: CValue<CMTime>) {
         val interval = CMTimeMultiply(time = duration, multiplier = 1)
         timeObserverToken = player.addBoundaryTimeObserverForTimes(
             times = listOf(NSValue.valueWithCMTime(interval)),

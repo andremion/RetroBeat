@@ -111,6 +111,8 @@ internal class MediaControllerListener(
                     position = (mediaController.currentPosition / mediaController.duration.toFloat()).coerceIn(0f, 1f),
                     time = mediaController.currentPosition.milliseconds,
                     duration = mediaController.duration.milliseconds,
+                    // Make sure the state is gonna be emitted even if the state is the same.
+                    timestamp = System.currentTimeMillis(),
                 )
             }
         } else {
