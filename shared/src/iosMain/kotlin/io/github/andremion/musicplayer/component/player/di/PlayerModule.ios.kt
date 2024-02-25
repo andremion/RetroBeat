@@ -16,10 +16,14 @@
 
 package io.github.andremion.musicplayer.component.player.di
 
+import io.github.andremion.musicplayer.component.player.AudioPlayer
+import io.github.andremion.musicplayer.component.player.AudioPlayerImpl
 import org.koin.dsl.module
 
 actual object PlayerModule {
     actual val module = module {
-        // Nothing to inject to iOS fom Kotlin yet
+        factory<AudioPlayer> {
+            AudioPlayerImpl()
+        }
     }
 }

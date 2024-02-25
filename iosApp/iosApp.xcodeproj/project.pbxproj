@@ -12,7 +12,6 @@
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 		78B028D22B7E4A590028AE90 /* ComposeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B028D12B7E4A590028AE90 /* ComposeView.swift */; };
-		78B028D52B7E4D310028AE90 /* AudioPlayerImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B028D42B7E4D310028AE90 /* AudioPlayerImpl.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,7 +35,6 @@
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		78B028D12B7E4A590028AE90 /* ComposeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeView.swift; sourceTree = "<group>"; };
-		78B028D42B7E4D310028AE90 /* AudioPlayerImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,8 +76,8 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
-				78B028D32B7E4D1F0028AE90 /* data */,
-				78B028D02B7E4A410028AE90 /* ui */,
+				7555FF82242A565900829871 /* ContentView.swift */,
+				78B028D12B7E4A590028AE90 /* ComposeView.swift */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
@@ -93,23 +91,6 @@
 			children = (
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		78B028D02B7E4A410028AE90 /* ui */ = {
-			isa = PBXGroup;
-			children = (
-				7555FF82242A565900829871 /* ContentView.swift */,
-				78B028D12B7E4A590028AE90 /* ComposeView.swift */,
-			);
-			path = ui;
-			sourceTree = "<group>";
-		};
-		78B028D32B7E4D1F0028AE90 /* data */ = {
-			isa = PBXGroup;
-			children = (
-				78B028D42B7E4D310028AE90 /* AudioPlayerImpl.swift */,
-			);
-			path = data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -206,7 +187,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				78B028D22B7E4A590028AE90 /* ComposeView.swift in Sources */,
-				78B028D52B7E4D310028AE90 /* AudioPlayerImpl.swift in Sources */,
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
 			);

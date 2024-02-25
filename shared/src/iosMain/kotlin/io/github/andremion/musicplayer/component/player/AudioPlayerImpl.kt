@@ -36,10 +36,12 @@ import platform.AVFoundation.play
 import platform.AVFoundation.removeTimeObserver
 import platform.AVFoundation.replaceCurrentItemWithPlayerItem
 import platform.AVFoundation.timeControlStatus
+import platform.AVFoundation.valueWithCMTime
 import platform.CoreMedia.CMTime
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMultiply
 import platform.Foundation.NSURL.Companion.URLWithString
+import platform.Foundation.NSValue
 import platform.darwin.dispatch_get_main_queue
 import kotlin.time.Duration.Companion.seconds
 
@@ -152,6 +154,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         val url = URLWithString(currentTrack.uri)!!
         val playerItem = AVPlayerItem(url)
 
+        // Remove any previous time observer
         timeObserverToken?.let { timeObserverToken ->
             player.removeTimeObserver(timeObserverToken)
             this.timeObserverToken = null
@@ -159,7 +162,6 @@ internal class AudioPlayerImpl : AudioPlayer {
 
         player.pause()
         player.replaceCurrentItemWithPlayerItem(playerItem)
-//        player.setActionAtItemEnd(AVPlayerActionAtItemEndAdvance)
 
         updateDuration()
         updateProgress()
@@ -172,7 +174,8 @@ internal class AudioPlayerImpl : AudioPlayer {
                 if (currentItem.asset.statusOfValueForKey("duration", null) != AVKeyValueStatusLoaded) {
                     Napier.w("Error on loading duration", tag = LogTag)
                 } else {
-//                    scheduleSkipToNext(duration = currentItem.asset.duration)
+                    // Skip to next track when the current one ends
+                    scheduleSkipToNextOnEndPlaying(duration = currentItem.asset.duration)
                     mutableState.update { state ->
                         state.copy(
                             duration = CMTimeGetSeconds(currentItem.asset.duration).seconds,
@@ -184,16 +187,13 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    private fun scheduleSkipToNext(duration: CValue<CMTime>) {
-        Napier.d("Scheduling skip to next track: duration: ${CMTimeGetSeconds(duration)}", tag = LogTag)
+    private fun scheduleSkipToNextOnEndPlaying(duration: CValue<CMTime>) {
         val interval = CMTimeMultiply(time = duration, multiplier = 1)
         timeObserverToken = player.addBoundaryTimeObserverForTimes(
-            times = listOf(interval),
+            times = listOf(NSValue.valueWithCMTime(interval)),
             queue = dispatch_get_main_queue()
         ) {
-            Napier.d("Skip to next track", tag = LogTag)
             skipToNext()
         }
-        Napier.d("Scheduled skip to next track: $timeObserverToken", tag = LogTag)
     }
 }

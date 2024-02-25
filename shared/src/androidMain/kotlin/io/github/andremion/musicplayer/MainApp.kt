@@ -25,8 +25,8 @@ class MainApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        initDI().androidContext(this)
-
         initLogging()
+
+        initDI().androidContext(this)
     }
 }
