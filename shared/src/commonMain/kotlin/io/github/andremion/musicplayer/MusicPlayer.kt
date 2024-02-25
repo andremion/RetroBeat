@@ -16,6 +16,7 @@
 
 package io.github.andremion.musicplayer
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import io.github.andremion.musicplayer.ui.navigation.MainNavigation
@@ -26,7 +27,7 @@ import moe.tlaster.precompose.PreComposeApp
 fun MusicPlayer() {
     PreComposeApp {
         AppTheme {
-            Surface {
+            Surface(color = MaterialTheme.colorScheme.background) {
                 MainNavigation()
             }
         }
