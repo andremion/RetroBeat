@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+internal const val DEFAULT_SEEK_BACK_INCREMENT = 5
+internal const val DEFAULT_SEEK_FORWARD_INCREMENT = 15
+
 interface AudioPlayer {
 
     val seekBackIncrementInSeconds: Int

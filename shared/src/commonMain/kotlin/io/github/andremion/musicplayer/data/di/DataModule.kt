@@ -24,7 +24,6 @@ import org.koin.dsl.module
 
 object DataModule {
     val module = module {
-        includes(InternalDataModule.module)
 
         single { DeezerHttpClientProvider.provide() }
 

@@ -36,9 +36,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-private const val DEFAULT_SEEK_BACK_INCREMENT = 5
-private const val DEFAULT_SEEK_FORWARD_INCREMENT = 15
-
 internal class AudioPlayerImpl(
     private val context: Context
 ) : AudioPlayer {
