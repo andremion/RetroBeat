@@ -48,6 +48,7 @@ import kotlin.math.roundToInt
 private const val INITIAL_ROTATION_ANGLE = 0f
 private const val FULL_ROTATION_ANGLE = 360f
 private const val HALF_OF_FULL_ROTATION_ANGLE = FULL_ROTATION_ANGLE / 2f
+private const val ROTATION_DURATION = 4000
 private const val ROTATION_END_DURATION = 500
 
 @OptIn(ExperimentalResourceApi::class)
@@ -72,7 +73,7 @@ fun MusicCover(
                 animate(
                     initialValue = 0f,
                     targetValue = FULL_ROTATION_ANGLE,
-                    animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
+                    animationSpec = tween(durationMillis = ROTATION_DURATION, easing = LinearEasing)
                 ) { value, _ ->
                     rotation = value
                 }
