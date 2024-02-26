@@ -1,14 +1,40 @@
-<img alt="Icon" src="https://github.com/andremion/RetroBeat/blob/10eeb0bf743224c36f43d753af785d0b89eea893/androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" width=100>
+<img alt="RetroBeat icon" src="https://github.com/andremion/RetroBeat/blob/10eeb0bf743224c36f43d753af785d0b89eea893/androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" width=100 align=left>
 
 # RetroBeat
 
-Android|iOS
--|-
-![retrobeat_android-ezgif com-video-to-gif-converter](https://github.com/andremion/RetroBeat/assets/12762356/f163378b-38b9-45c6-ab47-8095f5780a32)|![retrobeat_ios-ezgif com-video-to-gif-converter](https://github.com/andremion/RetroBeat/assets/12762356/ddc6c154-16d3-4932-8ccd-1a6f5e518972)
+A music player app with the vibe of good old vinyl players.
 
-## Data source
+</br>
 
-Currently fetching playlists from [Deezer API](https://developers.deezer.com/api/explorer) but flexible enough to change to another one.
+<a src=https://medium.com/@andremion/music-player-3a85864d6df7><img align=left width="480" alt="Music Player: From UI proposal to code" src="https://github.com/andremion/RetroBeat/assets/12762356/14b3cd4a-ba02-4eab-b983-0cd3d68cb928"></a>
+
+In 2016, I published an [article](https://medium.com/@andremion/music-player-3a85864d6df7) about how to code a design proposal.
+
+I noticed that a lot of people had difficulty building motion designs. 
+
+**RetroBeat** is an updated version of that proposal that uses modern tools and frameworks and now also targets iOS. 🚀
+
+</br></br>
+
+<div align=center>
+
+https://github.com/andremion/RetroBeat/assets/12762356/91988a95-48cc-438a-a261-b261ff853afd
+    
+</div>
+
+## Music source
+
+Currently fetching playlists from [Deezer API](https://developers.deezer.com/api/explorer) where those songs are previews of 30 seconds.
+
+The solution is flexible enough to support another source.
+
+## Dependencies
+
+- [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform): A declarative framework based on Jetpack Compose and developed by JetBrains and open-source contributors for sharing UIs across multiple platforms with Kotlin.
+- [PreCompose](https://github.com/Tlaster/PreCompose): Supports navigation and view models providing similar APIs to Jetpack ones.
+- [Compottie](https://github.com/alexzhirkevich/compottie): A port of [Lottie Compose](https://github.com/airbnb/lottie/blob/master/android-compose.md).
+- [Koin](https://github.com/InsertKoinIO/koin): A pragmatic lightweight dependency injection framework.
+- [Ktor Client](https://github.com/ktorio/ktor): A library for fetching data from the internet and written in Kotlin from the ground up.
 
 ## TODO
 
