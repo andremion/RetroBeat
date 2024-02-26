@@ -10,11 +10,11 @@ A music player app with the vibe of good old vinyl players.
 
 In 2016, I published an [article](https://medium.com/@andremion/music-player-3a85864d6df7) about how to code a design proposal.
 
-I noticed that a lot of people had difficulty building motion designs. 
+I noticed that a lot of people had difficulty building motion designs.
 
 **RetroBeat** is an updated version of that proposal that uses modern tools and frameworks and now also targets iOS. 🚀
 
-</br></br>
+</br>
 
 <div align=center>
 
@@ -31,6 +31,7 @@ The solution is flexible enough to support another source.
 ## Dependencies
 
 - [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform): A declarative framework based on Jetpack Compose and developed by JetBrains and open-source contributors for sharing UIs across multiple platforms with Kotlin.
+- [Exoplayer](https://github.com/google/ExoPlayer): An extensible media player for Android.
 - [PreCompose](https://github.com/Tlaster/PreCompose): Supports navigation and view models providing similar APIs to Jetpack ones.
 - [Compottie](https://github.com/alexzhirkevich/compottie): A port of [Lottie Compose](https://github.com/airbnb/lottie/blob/master/android-compose.md).
 - [Koin](https://github.com/InsertKoinIO/koin): A pragmatic lightweight dependency injection framework.
