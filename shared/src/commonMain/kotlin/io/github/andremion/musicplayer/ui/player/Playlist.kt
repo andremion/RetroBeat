@@ -52,8 +52,14 @@ import io.github.andremion.musicplayer.component.time.format
 import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
+import retrobeat.shared.generated.resources.Res
+import retrobeat.shared.generated.resources.player_playlist_album_art_content_description
+import retrobeat.shared.generated.resources.player_playlist_options_content_description
+import retrobeat.shared.generated.resources.player_playlist_track_count
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
 @Composable
 fun Playlist(
     playlist: Playlist,
@@ -75,7 +81,7 @@ fun Playlist(
                             overflow = TextOverflow.Ellipsis,
                         )
                         Text(
-                            text = "${playlist.musics.size} tracks",
+                            text = stringResource(Res.string.player_playlist_track_count, playlist.musics.size),
                             style = MaterialTheme.typography.labelMedium,
                         )
                     }
@@ -89,7 +95,7 @@ fun Playlist(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.MoreVert,
-                            contentDescription = "Playlist options",
+                            contentDescription = stringResource(Res.string.player_playlist_options_content_description),
                         )
                     }
                 }
@@ -130,7 +136,7 @@ fun Playlist(
                                 .size(56.dp)
                                 .clip(MaterialTheme.shapes.extraSmall),
                             resource = asyncPainterResource(music.album.picture.small),
-                            contentDescription = "Album art",
+                            contentDescription = stringResource(Res.string.player_playlist_album_art_content_description),
                             animationSpec = tween(),
                         )
                         Column(

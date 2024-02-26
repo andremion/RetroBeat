@@ -1,0 +1,10 @@
+<resources>
+    <string name="player_playlist_track_count">%1$d tracks</string>
+    <string name="player_playlist_album_art_content_description">Album art</string>
+    <string name="player_playlist_options_content_description">Playlist options</string>
+    <string name="player_music_cover_content_description">Music cover</string>
+    <string name="player_skip_to_previous_content_description">Skip to previous track</string>
+    <string name="player_skip_to_next_content_description">Skip to next track</string>
+    <string name="player_seek_backwards_content_description">Seek backwards</string>
+    <string name="player_seek_forwards_content_description">Seek forwards</string>
+</resources>

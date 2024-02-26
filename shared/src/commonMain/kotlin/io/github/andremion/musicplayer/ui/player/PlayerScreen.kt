@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+@file:OptIn(ExperimentalResourceApi::class)
+
 package io.github.andremion.musicplayer.ui.player
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -72,7 +74,14 @@ import io.github.andremion.musicplayer.ui.animation.rememberLottieComposition
 import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
+import retrobeat.shared.generated.resources.Res
+import retrobeat.shared.generated.resources.player_seek_backwards_content_description
+import retrobeat.shared.generated.resources.player_seek_forwards_content_description
+import retrobeat.shared.generated.resources.player_skip_to_next_content_description
+import retrobeat.shared.generated.resources.player_skip_to_previous_content_description
 
 @Composable
 fun PlayerScreen(playlistId: String) {
@@ -302,7 +311,7 @@ private fun ScreenContent(
                         Icon(
                             modifier = Modifier.size(DefaultIconSize),
                             imageVector = Icons.Rounded.SkipPrevious,
-                            contentDescription = "Skip to previous",
+                            contentDescription = stringResource(Res.string.player_skip_to_previous_content_description)
                         )
                     }
                     IconButton(
@@ -314,7 +323,7 @@ private fun ScreenContent(
                             Icon(
                                 modifier = Modifier.size(DefaultIconSize),
                                 imageVector = Icons.Rounded.Replay,
-                                contentDescription = "Seek backward",
+                                contentDescription = stringResource(Res.string.player_seek_backwards_content_description)
                             )
                             Text(
                                 modifier = Modifier.padding(top = 6.dp),
@@ -334,7 +343,7 @@ private fun ScreenContent(
                                     .size(DefaultIconSize)
                                     .graphicsLayer { rotationY = 180f },
                                 imageVector = Icons.Rounded.Replay,
-                                contentDescription = "Seek forward",
+                                contentDescription = stringResource(Res.string.player_seek_forwards_content_description)
                             )
                             Text(
                                 modifier = Modifier.padding(top = 6.dp),
@@ -349,7 +358,7 @@ private fun ScreenContent(
                         Icon(
                             modifier = Modifier.size(DefaultIconSize),
                             imageVector = Icons.Rounded.SkipNext,
-                            contentDescription = "Skip to next",
+                            contentDescription = stringResource(Res.string.player_skip_to_next_content_description)
                         )
                     }
                 }

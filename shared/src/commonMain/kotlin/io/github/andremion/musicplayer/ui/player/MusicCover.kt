@@ -37,6 +37,10 @@ import androidx.compose.ui.unit.dp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.isActive
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
+import retrobeat.shared.generated.resources.Res
+import retrobeat.shared.generated.resources.player_music_cover_content_description
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -46,6 +50,7 @@ private const val FULL_ROTATION_ANGLE = 360f
 private const val HALF_OF_FULL_ROTATION_ANGLE = FULL_ROTATION_ANGLE / 2f
 private const val ROTATION_END_DURATION = 500
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun MusicCover(
     modifier: Modifier,
@@ -116,7 +121,7 @@ fun MusicCover(
             },
         resource = asyncPainterResource(uri),
         contentScale = ContentScale.FillWidth,
-        contentDescription = "Music Cover",
+        contentDescription = stringResource(Res.string.player_music_cover_content_description),
         animationSpec = tween()
     )
 }
