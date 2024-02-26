@@ -6,7 +6,7 @@ A music player app with the vibe of good old vinyl players.
 
 </br>
 
-<a src=https://medium.com/@andremion/music-player-3a85864d6df7><img align=left width="480" alt="Music Player: From UI proposal to code" src="https://github.com/andremion/RetroBeat/assets/12762356/14b3cd4a-ba02-4eab-b983-0cd3d68cb928"></a>
+<a href=https://medium.com/@andremion/music-player-3a85864d6df7 target=_blank><img align=left width="480" alt="Music Player: From UI proposal to code" src="https://github.com/andremion/RetroBeat/assets/12762356/14b3cd4a-ba02-4eab-b983-0cd3d68cb928"></a>
 
 In 2016, I published an [article](https://medium.com/@andremion/music-player-3a85864d6df7) about how to code a design proposal.
 
