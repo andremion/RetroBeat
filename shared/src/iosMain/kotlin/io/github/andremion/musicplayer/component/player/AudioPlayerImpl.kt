@@ -34,11 +34,12 @@ import platform.AVFoundation.pause
 import platform.AVFoundation.play
 import platform.AVFoundation.removeTimeObserver
 import platform.AVFoundation.replaceCurrentItemWithPlayerItem
+import platform.AVFoundation.seekToTime
 import platform.AVFoundation.timeControlStatus
 import platform.AVFoundation.valueWithCMTime
 import platform.CoreMedia.CMTime
 import platform.CoreMedia.CMTimeGetSeconds
-import platform.CoreMedia.CMTimeMultiply
+import platform.CoreMedia.CMTimeMakeWithSeconds
 import platform.Foundation.NSURL.Companion.URLWithString
 import platform.Foundation.NSValue
 import platform.darwin.dispatch_get_main_queue
@@ -117,11 +118,19 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun seekBackward() {
-        TODO("Not yet implemented")
+        val time = CMTimeMakeWithSeconds(
+            seconds = CMTimeGetSeconds(player.currentTime()) - seekBackIncrementInSeconds,
+            preferredTimescale = 1
+        )
+        player.seekToTime(time)
     }
 
     override fun seekForward() {
-        TODO("Not yet implemented")
+        val time = CMTimeMakeWithSeconds(
+            seconds = CMTimeGetSeconds(player.currentTime()) + seekForwardIncrementInSeconds,
+            preferredTimescale = 1
+        )
+        player.seekToTime(time)
     }
 
     override fun toggleRepeatMode() {
@@ -177,9 +186,9 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     private fun scheduleNextSkipOnEndPlaying(duration: CValue<CMTime>) {
-        val interval = CMTimeMultiply(time = duration, multiplier = 1)
+        val time = CMTimeMakeWithSeconds(seconds = CMTimeGetSeconds(duration), preferredTimescale = 1)
         timeObserverToken = player.addBoundaryTimeObserverForTimes(
-            times = listOf(NSValue.valueWithCMTime(interval)),
+            times = listOf(NSValue.valueWithCMTime(time)),
             queue = dispatch_get_main_queue()
         ) {
             skipToNext()
