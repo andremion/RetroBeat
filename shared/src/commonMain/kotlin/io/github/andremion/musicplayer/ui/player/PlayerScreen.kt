@@ -78,8 +78,8 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import retrobeat.shared.generated.resources.Res
-import retrobeat.shared.generated.resources.player_seek_backwards_content_description
-import retrobeat.shared.generated.resources.player_seek_forwards_content_description
+import retrobeat.shared.generated.resources.player_seek_backward_content_description
+import retrobeat.shared.generated.resources.player_seek_forward_content_description
 import retrobeat.shared.generated.resources.player_skip_to_next_content_description
 import retrobeat.shared.generated.resources.player_skip_to_previous_content_description
 
@@ -323,7 +323,7 @@ private fun ScreenContent(
                             Icon(
                                 modifier = Modifier.size(DefaultIconSize),
                                 imageVector = Icons.Rounded.Replay,
-                                contentDescription = stringResource(Res.string.player_seek_backwards_content_description)
+                                contentDescription = stringResource(Res.string.player_seek_backward_content_description)
                             )
                             Text(
                                 modifier = Modifier.padding(top = 6.dp),
@@ -343,7 +343,7 @@ private fun ScreenContent(
                                     .size(DefaultIconSize)
                                     .graphicsLayer { rotationY = 180f },
                                 imageVector = Icons.Rounded.Replay,
-                                contentDescription = stringResource(Res.string.player_seek_forwards_content_description)
+                                contentDescription = stringResource(Res.string.player_seek_forward_content_description)
                             )
                             Text(
                                 modifier = Modifier.padding(top = 6.dp),

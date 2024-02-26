@@ -5,6 +5,6 @@
     <string name="player_music_cover_content_description">Music cover</string>
     <string name="player_skip_to_previous_content_description">Skip to previous track</string>
     <string name="player_skip_to_next_content_description">Skip to next track</string>
-    <string name="player_seek_backwards_content_description">Seek backwards</string>
-    <string name="player_seek_forwards_content_description">Seek forwards</string>
+    <string name="player_seek_backward_content_description">Seek backward</string>
+    <string name="player_seek_forward_content_description">Seek forward</string>
 </resources>
