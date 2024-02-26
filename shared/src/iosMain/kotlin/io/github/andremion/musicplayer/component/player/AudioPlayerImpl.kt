@@ -104,16 +104,41 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun skipToPrevious() {
-        if (currentItemIndex > 0) {
-            play(trackIndex = currentItemIndex - 1)
+        val previousIndex = if (currentItemIndex > 0) {
+            currentItemIndex - 1
+        } else {
+            if (state.value.repeatMode == AudioPlayer.RepeatMode.All) {
+                tracks.size - 1
+            } else {
+                -1
+            }
+        }
+        if (previousIndex == -1) {
+            player.seekToTime(
+                CMTimeMakeWithSeconds(
+                    seconds = 0.0,
+                    preferredTimescale = 1
+                )
+            )
+        } else {
+            play(previousIndex)
         }
     }
 
     override fun skipToNext() {
-        if (currentItemIndex < tracks.size - 1) {
-            play(trackIndex = currentItemIndex + 1)
+        val nextIndex = if (currentItemIndex < tracks.size - 1) {
+            currentItemIndex + 1
         } else {
-            pause()
+            when (state.value.repeatMode) {
+                AudioPlayer.RepeatMode.One -> currentItemIndex
+                AudioPlayer.RepeatMode.All -> 0
+                AudioPlayer.RepeatMode.Off -> -1
+            }
+        }
+        if (nextIndex == -1) {
+            stop()
+        } else {
+            play(nextIndex)
         }
     }
 
@@ -134,7 +159,9 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun toggleRepeatMode() {
-        TODO("Not yet implemented")
+        mutableState.update { state ->
+            state.copy(repeatMode = state.repeatMode.toggle())
+        }
     }
 
     override fun toggleShuffleMode() {
@@ -159,6 +186,15 @@ internal class AudioPlayerImpl : AudioPlayer {
             state.copy(isPlaying = false)
         }
         updateProgress()
+    }
+
+    private fun stop() {
+        player.pause()
+        setCurrentItem(currentItemIndex) {
+            mutableState.update { state ->
+                state.copy(isPlaying = false)
+            }
+        }
     }
 
     private fun setCurrentItem(index: Int, onLoaded: () -> Unit = {}) {

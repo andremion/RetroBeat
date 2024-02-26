@@ -69,5 +69,15 @@ interface AudioPlayer {
         )
     }
 
-    enum class RepeatMode { Off, One, All }
+    enum class RepeatMode {
+        Off, One, All;
+
+        fun toggle(): RepeatMode =
+        // Produce a circular iteration over the enum values
+            // to create a map where every key is associated with the next value.
+            (entries + entries.first())
+                .zipWithNext { a, b -> a to b }
+                .toMap()
+                .getValue(this)
+    }
 }
