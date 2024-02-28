@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 
+@file:OptIn(ExperimentalResourceApi::class)
+
 package io.github.andremion.musicplayer.ui.discovery
 
 import androidx.compose.foundation.clickable
@@ -24,17 +26,23 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.domain.entity.Playlist
@@ -44,10 +52,19 @@ import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiState
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryViewModel
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import io.ktor.utils.io.errors.IOException
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
+import retrobeat.shared.generated.resources.Res
+import retrobeat.shared.generated.resources.error_retry_button
+import retrobeat.shared.generated.resources.generic_error_message
+import retrobeat.shared.generated.resources.generic_error_title
+import retrobeat.shared.generated.resources.internet_connection_error_message
+import retrobeat.shared.generated.resources.internet_connection_error_title
 
 @Composable
 fun DiscoveryScreen(
@@ -79,16 +96,16 @@ private fun ScreenContent(
         Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             uiState.playlists
                 .onLoading {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Center)
-                    )
+                    CircularProgressIndicator()
                 }
                 .onSuccess { playlists ->
                     LazyVerticalStaggeredGrid(
+                        modifier = Modifier.fillMaxSize(),
                         columns = StaggeredGridCells.Adaptive(GridColumnSize),
                         verticalItemSpacing = 8.dp,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -114,9 +131,53 @@ private fun ScreenContent(
                             }
                         }
                     }
+                }.onFailure { cause ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(48.dp),
+                            imageVector = Icons.Rounded.ErrorOutline,
+                            contentDescription = null,
+                        )
+                        when (cause) {
+                            is IOException -> InternetConnectionError()
+                            else -> GenericError()
+                        }
+                        TextButton(
+                            onClick = { onUiEvent(DiscoveryUiEvent.RetryClick) }
+                        ) {
+                            Text(text = stringResource(Res.string.error_retry_button))
+                        }
+                    }
                 }
         }
     }
+}
+
+@Composable
+private fun InternetConnectionError() {
+    Text(
+        text = stringResource(Res.string.internet_connection_error_title),
+        style = MaterialTheme.typography.bodyLarge
+    )
+    Text(
+        text = stringResource(Res.string.internet_connection_error_message),
+        style = MaterialTheme.typography.bodyMedium
+    )
+}
+
+@Composable
+private fun GenericError() {
+    Text(
+        text = stringResource(Res.string.generic_error_title),
+        style = MaterialTheme.typography.bodyLarge
+    )
+    Text(
+        text = stringResource(Res.string.generic_error_message),
+        style = MaterialTheme.typography.bodyMedium
+    )
 }
 
 private val GridColumnSize = 122.dp

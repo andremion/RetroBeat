@@ -27,9 +27,9 @@ fun Duration.format(): String {
     val minutes = absoluteRoundedSeconds / 60 % 60
     val seconds = absoluteRoundedSeconds % 60
     return if (hours > 0) {
-        "$prefix${hours.padded()}:${minutes.padded()}:${seconds.padded()}"
+        "$prefix$hours:$minutes:${seconds.padded()}"
     } else {
-        "$prefix${minutes.padded()}:${seconds.padded()}"
+        "$prefix$minutes:${seconds.padded()}"
     }
 }
 

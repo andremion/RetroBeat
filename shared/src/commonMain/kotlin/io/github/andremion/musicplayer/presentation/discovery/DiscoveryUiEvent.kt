@@ -18,4 +18,5 @@ package io.github.andremion.musicplayer.presentation.discovery
 
 sealed interface DiscoveryUiEvent {
     data class PlaylistClick(val playlistId: String) : DiscoveryUiEvent
+    data object RetryClick : DiscoveryUiEvent
 }
