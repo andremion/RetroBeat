@@ -168,7 +168,7 @@ private fun ScreenContent(
                 }
             }
 
-            val title = uiState.currentTrack?.metadata?.title.toString()
+            val title = uiState.currentTrack?.metadata?.title.orEmpty()
             val titleText = rememberMovableContent(title) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
@@ -180,7 +180,7 @@ private fun ScreenContent(
                 )
             }
 
-            val artist = uiState.currentTrack?.metadata?.artist.toString()
+            val artist = uiState.currentTrack?.metadata?.artist.orEmpty()
             val artistText = rememberMovableContent(artist) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
