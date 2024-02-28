@@ -72,6 +72,7 @@ import io.github.andremion.musicplayer.ui.animation.SceneRoot
 import io.github.andremion.musicplayer.ui.animation.SlideFromBottom
 import io.github.andremion.musicplayer.ui.animation.rememberLottieComposition
 import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
+import io.github.andremion.musicplayer.ui.component.ErrorView
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -246,6 +247,11 @@ private fun ScreenContent(
                             onMusicClick = { musicIndex ->
                                 onUiEvent(PlayerUiEvent.MusicClick(musicIndex))
                             }
+                        )
+                    }.onFailure { cause ->
+                        ErrorView(
+                            cause = cause,
+                            onRetryClick = { onUiEvent(PlayerUiEvent.RetryClick) }
                         )
                     }
             }

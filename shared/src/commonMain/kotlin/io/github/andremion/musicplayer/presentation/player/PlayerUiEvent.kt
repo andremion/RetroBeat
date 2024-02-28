@@ -25,4 +25,5 @@ sealed interface PlayerUiEvent {
     data object RepeatClick : PlayerUiEvent
     data object ShuffleClick : PlayerUiEvent
     data class MusicClick(val musicIndex: Int) : PlayerUiEvent
+    data object RetryClick : PlayerUiEvent
 }

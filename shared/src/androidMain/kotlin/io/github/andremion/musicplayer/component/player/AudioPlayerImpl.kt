@@ -45,20 +45,26 @@ internal class AudioPlayerImpl(
     }
 
     private lateinit var controllerFuture: ListenableFuture<MediaController>
+
+    private val isControllerInitialized: Boolean
+        get() = ::controllerFuture.isInitialized && controllerFuture.isDone
+
     private val listener: MediaControllerListener by lazy {
         MediaControllerListener(controllerFuture.get(), mutableState, mutableTrack)
     }
+
     private val player: Player
         get() = controllerFuture.get()
 
     override val seekBackIncrementInSeconds: Int
-        get() = if (controllerFuture.isDone) {
+        get() = if (isControllerInitialized) {
             (player.seekBackIncrement / 1_000).toInt()
         } else {
             DEFAULT_SEEK_BACK_INCREMENT
         }
+
     override val seekForwardIncrementInSeconds: Int
-        get() = if (controllerFuture.isDone) {
+        get() = if (isControllerInitialized) {
             (player.seekForwardIncrement / 1_000).toInt()
         } else {
             DEFAULT_SEEK_FORWARD_INCREMENT
@@ -71,6 +77,7 @@ internal class AudioPlayerImpl(
     override val currentTrack: StateFlow<AudioPlayer.Track?> = mutableTrack.asStateFlow()
 
     override fun initialize(onInitialized: () -> Unit) {
+        if (isControllerInitialized) error("MediaController is already initialized")
         // Attaches the media session from the service to the media controller,
         // so that the media controller can be used to control the media session.
         val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))
@@ -86,7 +93,7 @@ internal class AudioPlayerImpl(
 
     override fun setTracks(tracks: List<AudioPlayer.Track>) {
         require(tracks.isNotEmpty()) { "Tracks list must not be empty" }
-        if (!controllerFuture.isDone) error("MediaController is not initialized yet")
+        if (!isControllerInitialized) error("MediaController is not initialized yet")
 
         player.clearMediaItems()
         player.addMediaItems(tracks.map(AudioPlayer.Track::toMediaItem))
