@@ -19,15 +19,12 @@ package io.github.andremion.musicplayer.data.api.deezer
 import io.github.andremion.musicplayer.data.api.setupJson
 import io.github.andremion.musicplayer.data.api.setupLogging
 import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.URLProtocol
 
-internal expect fun buildDeezerClient(block: HttpClientConfig<*>.() -> Unit): HttpClient
-
 internal object DeezerHttpClientProvider {
 
-    fun provide(): HttpClient = buildDeezerClient {
+    fun provide(): HttpClient = HttpClient {
         expectSuccess = true // Throw exceptions in case of non-2xx responses
         setupJson()
         setupLogging()
