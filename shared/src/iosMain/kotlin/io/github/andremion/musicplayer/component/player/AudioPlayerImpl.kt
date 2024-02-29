@@ -56,11 +56,11 @@ internal class AudioPlayerImpl : AudioPlayer {
     override val seekBackIncrementInSeconds: Int = DEFAULT_SEEK_BACK_INCREMENT
     override val seekForwardIncrementInSeconds: Int = DEFAULT_SEEK_FORWARD_INCREMENT
 
-    private val mutableState = MutableStateFlow(AudioPlayer.State())
-    override val state: StateFlow<AudioPlayer.State> = mutableState.asStateFlow()
-
     private val mutableTrack = MutableStateFlow<AudioPlayer.Track?>(null)
     override val currentTrack: StateFlow<AudioPlayer.Track?> = mutableTrack.asStateFlow()
+
+    private val mutablePlayback = MutableStateFlow(AudioPlayer.Playback())
+    override val playback: StateFlow<AudioPlayer.Playback> = mutablePlayback.asStateFlow()
 
     override fun initialize(onInitialized: () -> Unit) {
         // iOS doesn't need to asynchronously initialize anything so far
@@ -89,15 +89,17 @@ internal class AudioPlayerImpl : AudioPlayer {
 
     override fun updateProgress() {
         player.currentItem?.let { currentItem ->
-            mutableState.update { state ->
+            mutablePlayback.update { playback ->
                 val currentTime = CMTimeGetSeconds(player.currentTime()).seconds
                 val duration = CMTimeGetSeconds(currentItem.asset.duration).seconds
-                state.copy(
-                    position = (currentTime / state.duration).toFloat(),
-                    time = currentTime,
+                playback.copy(
+                    progress = AudioPlayer.Playback.Progress(
+                        position = (currentTime / playback.duration).toFloat(),
+                        time = currentTime,
+                        // Make sure the state is gonna be emitted even if the state is the same.
+                        timestamp = Clock.System.now().toEpochMilliseconds(),
+                    ),
                     duration = duration,
-                    // Make sure the state is gonna be emitted even if the state is the same.
-                    timestamp = Clock.System.now().toEpochMilliseconds(),
                 )
             }
         }
@@ -107,7 +109,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         val previousIndex = if (currentItemIndex > 0) {
             currentItemIndex - 1
         } else {
-            if (state.value.repeatMode == AudioPlayer.RepeatMode.All) {
+            if (playback.value.repeatMode == AudioPlayer.RepeatMode.All) {
                 tracks.size - 1
             } else {
                 -1
@@ -129,7 +131,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         val nextIndex = if (currentItemIndex < tracks.size - 1) {
             currentItemIndex + 1
         } else {
-            when (state.value.repeatMode) {
+            when (playback.value.repeatMode) {
                 AudioPlayer.RepeatMode.One -> currentItemIndex
                 AudioPlayer.RepeatMode.All -> 0
                 AudioPlayer.RepeatMode.Off -> -1
@@ -159,8 +161,8 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun toggleRepeatMode() {
-        mutableState.update { state ->
-            state.copy(repeatMode = state.repeatMode.toggle())
+        mutablePlayback.update { playback ->
+            playback.copy(repeatMode = playback.repeatMode.toggle())
         }
     }
 
@@ -174,16 +176,16 @@ internal class AudioPlayerImpl : AudioPlayer {
 
     private fun play() {
         player.play()
-        mutableState.update { state ->
-            state.copy(isPlaying = true)
+        mutablePlayback.update { playback ->
+            playback.copy(isPlaying = true)
         }
         updateProgress()
     }
 
     private fun pause() {
         player.pause()
-        mutableState.update { state ->
-            state.copy(isPlaying = false)
+        mutablePlayback.update { playback ->
+            playback.copy(isPlaying = false)
         }
         updateProgress()
     }
@@ -191,8 +193,8 @@ internal class AudioPlayerImpl : AudioPlayer {
     private fun stop() {
         player.pause()
         setCurrentItem(currentItemIndex) {
-            mutableState.update { state ->
-                state.copy(isPlaying = false)
+            mutablePlayback.update { playback ->
+                playback.copy(isPlaying = false)
             }
         }
     }
@@ -209,6 +211,10 @@ internal class AudioPlayerImpl : AudioPlayer {
         val currentTrack = tracks[index]
         mutableTrack.update { currentTrack }
 
+        mutablePlayback.update { playback ->
+            playback.copy(isLoading = true)
+        }
+
         val url = URLWithString(currentTrack.uri)!!
         AVPlayerItem(url).apply {
             player.replaceCurrentItemWithPlayerItem(this)
@@ -216,6 +222,9 @@ internal class AudioPlayerImpl : AudioPlayer {
                 // Skip to the next track when the current one ends
                 scheduleNextSkipOnEndPlaying(duration = asset.duration)
                 updateProgress()
+                mutablePlayback.update { playback ->
+                    playback.copy(isLoading = false)
+                }
                 onLoaded()
             }
         }
