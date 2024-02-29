@@ -16,28 +16,32 @@
 
 package io.github.andremion.musicplayer.component.player
 
-import androidx.annotation.OptIn
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Player.RepeatMode
 import androidx.media3.common.Player.State
 import androidx.media3.common.Timeline
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 internal class MediaControllerListener(
     private val mediaController: MediaController,
-    private val mutableState: MutableStateFlow<AudioPlayer.State>,
-    private val mutableTrack: MutableStateFlow<AudioPlayer.Track?>
+    private val mutableTrack: MutableStateFlow<AudioPlayer.Track?>,
+    private val mutablePlayback: MutableStateFlow<AudioPlayer.Playback>,
 ) : Player.Listener {
 
     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
         updateCurrentTrack()
+    }
+
+    override fun onIsLoadingChanged(isLoading: Boolean) {
+        updateIsLoading()
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -46,6 +50,7 @@ internal class MediaControllerListener(
     }
 
     override fun onPlaybackStateChanged(@State playbackState: Int) {
+        updateHasError()
         updateProgress()
     }
 
@@ -93,26 +98,41 @@ internal class MediaControllerListener(
             )
         )
 
+    private fun updateIsLoading() {
+        mutablePlayback.update { playback ->
+            playback.copy(
+                isLoading = mediaController.isLoading
+            )
+        }
+    }
+
     private fun updateIsPlaying() {
         if (mediaController.isCommandAvailable(Player.COMMAND_PLAY_PAUSE)) {
-            mutableState.update { state ->
-                state.copy(isPlaying = mediaController.isPlaying)
+            mutablePlayback.update { playback ->
+                playback.copy(isPlaying = mediaController.isPlaying)
             }
         } else {
             Napier.w("COMMAND_PLAY_PAUSE is not available", tag = AudioPlayerImpl.LogTag)
         }
     }
 
-    @OptIn(UnstableApi::class)
+    private fun updateHasError() {
+        mutablePlayback.update { playback ->
+            playback.copy(hasError = mediaController.playerError != null)
+        }
+    }
+
     fun updateProgress() {
         if (mediaController.isCommandAvailable(Player.COMMAND_GET_CURRENT_MEDIA_ITEM)) {
-            mutableState.update { state ->
-                state.copy(
-                    position = (mediaController.currentPosition / mediaController.duration.toFloat()).coerceIn(0f, 1f),
-                    time = mediaController.currentPosition.milliseconds,
-                    duration = mediaController.duration.milliseconds,
-                    // Make sure the state is gonna be emitted even if the state is the same.
-                    timestamp = System.currentTimeMillis(),
+            mutablePlayback.update { playback ->
+                playback.copy(
+                    progress = AudioPlayer.Playback.Progress(
+                        position = (mediaController.currentPosition / mediaController.duration.toFloat())
+                            .coerceIn(0f, 1f),
+                        time = mediaController.currentPosition.milliseconds,
+                        // Make sure the state is gonna be emitted even if the state is the same.
+                        timestamp = System.currentTimeMillis(),
+                    )
                 )
             }
         } else {
@@ -122,8 +142,8 @@ internal class MediaControllerListener(
 
     private fun updateRepeatMode() {
         if (mediaController.isCommandAvailable(Player.COMMAND_SET_REPEAT_MODE)) {
-            mutableState.update { state ->
-                state.copy(repeatMode = map(mediaController.repeatMode))
+            mutablePlayback.update { playback ->
+                playback.copy(repeatMode = map(mediaController.repeatMode))
             }
         } else {
             Napier.w("COMMAND_SET_REPEAT_MODE is not available", tag = AudioPlayerImpl.LogTag)
@@ -132,8 +152,8 @@ internal class MediaControllerListener(
 
     private fun updateShuffleMode() {
         if (mediaController.isCommandAvailable(Player.COMMAND_SET_SHUFFLE_MODE)) {
-            mutableState.update { state ->
-                state.copy(isShuffleModeOn = mediaController.shuffleModeEnabled)
+            mutablePlayback.update { playback ->
+                playback.copy(isShuffleModeOn = mediaController.shuffleModeEnabled)
             }
         } else {
             Napier.w("COMMAND_SET_SHUFFLE_MODE is not available", tag = AudioPlayerImpl.LogTag)
@@ -141,6 +161,15 @@ internal class MediaControllerListener(
     }
 
     private fun updateTimeline() {
+        mutablePlayback.update { playback ->
+            playback.copy(
+                duration = if (mediaController.duration == C.TIME_UNSET) {
+                    (-0).seconds
+                } else {
+                    mediaController.duration.milliseconds
+                },
+            )
+        }
         updateProgress()
     }
 }

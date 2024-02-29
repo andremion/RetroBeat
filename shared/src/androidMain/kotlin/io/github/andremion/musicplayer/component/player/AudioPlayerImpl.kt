@@ -50,7 +50,7 @@ internal class AudioPlayerImpl(
         get() = ::controllerFuture.isInitialized && controllerFuture.isDone
 
     private val listener: MediaControllerListener by lazy {
-        MediaControllerListener(controllerFuture.get(), mutableState, mutableTrack)
+        MediaControllerListener(controllerFuture.get(), mutableTrack, mutablePlayback)
     }
 
     private val player: Player
@@ -70,14 +70,17 @@ internal class AudioPlayerImpl(
             DEFAULT_SEEK_FORWARD_INCREMENT
         }
 
-    private val mutableState = MutableStateFlow(AudioPlayer.State())
-    override val state: StateFlow<AudioPlayer.State> = mutableState.asStateFlow()
-
     private val mutableTrack = MutableStateFlow<AudioPlayer.Track?>(null)
     override val currentTrack: StateFlow<AudioPlayer.Track?> = mutableTrack.asStateFlow()
 
+    private val mutablePlayback = MutableStateFlow(AudioPlayer.Playback())
+    override val playback: StateFlow<AudioPlayer.Playback> = mutablePlayback.asStateFlow()
+
     override fun initialize(onInitialized: () -> Unit) {
-        if (isControllerInitialized) error("MediaController is already initialized")
+        if (isControllerInitialized) {
+            Napier.w("MediaController is already initialized", tag = LogTag)
+            onInitialized()
+        }
         // Attaches the media session from the service to the media controller,
         // so that the media controller can be used to control the media session.
         val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))

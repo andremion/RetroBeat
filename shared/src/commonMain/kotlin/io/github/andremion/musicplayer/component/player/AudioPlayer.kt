@@ -18,7 +18,7 @@ package io.github.andremion.musicplayer.component.player
 
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 internal const val DEFAULT_SEEK_BACK_INCREMENT = 5
 internal const val DEFAULT_SEEK_FORWARD_INCREMENT = 15
@@ -28,8 +28,8 @@ interface AudioPlayer {
     val seekBackIncrementInSeconds: Int
     val seekForwardIncrementInSeconds: Int
 
-    val state: StateFlow<State>
     val currentTrack: StateFlow<Track?>
+    val playback: StateFlow<Playback>
 
     fun initialize(onInitialized: () -> Unit)
     fun setTracks(tracks: List<Track>)
@@ -44,18 +44,6 @@ interface AudioPlayer {
     fun toggleShuffleMode()
     fun releasePlayer() // There is a `release` function in ObjectiveC.NSObject already. So I had to use the `Player` suffix.
 
-    data class State(
-        val isPlaying: Boolean = false,
-        val position: Float = -0f,
-        val time: Duration = (-0).milliseconds,
-        val duration: Duration = (-0).milliseconds,
-        val repeatMode: RepeatMode = RepeatMode.Off,
-        val isShuffleModeOn: Boolean = false,
-        // It can be used to emit state even if the state is the same.
-        // This is useful for the update progress function to work properly.
-        val timestamp: Long = 0,
-    )
-
     data class Track(
         val id: String,
         val uri: String,
@@ -66,6 +54,25 @@ interface AudioPlayer {
             val artist: String,
             val albumTitle: String,
             val artworkUri: String,
+        )
+    }
+
+    data class Playback(
+        val isLoading: Boolean = false,
+        val isPlaying: Boolean = false,
+        val hasError: Boolean = false,
+        val progress: Progress = Progress(),
+        val duration: Duration = (-0).seconds,
+        val repeatMode: RepeatMode = RepeatMode.Off,
+        val isShuffleModeOn: Boolean = false,
+    ) {
+
+        data class Progress(
+            val position: Float = -0f,
+            val time: Duration = (-0).seconds,
+            // It can be used to emit data even if the data is the same.
+            // This is useful for the update progress function to work properly.
+            val timestamp: Long = 0,
         )
     }
 

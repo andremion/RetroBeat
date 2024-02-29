@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.andremion.musicplayer.ui.theme.DefaultIconSize
 import io.ktor.utils.io.errors.IOException
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
@@ -51,7 +52,7 @@ fun ErrorView(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(
-            modifier = Modifier.size(48.dp),
+            modifier = Modifier.size(DefaultIconSize),
             imageVector = Icons.Rounded.ErrorOutline,
             contentDescription = null,
         )

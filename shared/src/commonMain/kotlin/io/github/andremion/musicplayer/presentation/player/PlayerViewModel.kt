@@ -57,9 +57,9 @@ class PlayerViewModel(
 
     private val currentTrack = audioPlayer.currentTrack
 
-    private val playerState = audioPlayer.state.onEach { state ->
+    private val playback = audioPlayer.playback.onEach { playback ->
         updateProgressJob?.cancel()
-        if (state.isPlaying) {
+        if (playback.isPlaying) {
             requestDelayedProgressUpdate()
         }
     }
@@ -67,14 +67,14 @@ class PlayerViewModel(
     val uiState = combine(
         playlist,
         currentTrack,
-        playerState,
-    ) { playlist, currentTrack, playerState ->
+        playback,
+    ) { playlist, currentTrack, playback ->
         PlayerUiState(
             seekBackIncrement = audioPlayer.seekBackIncrementInSeconds.toString(),
             seekForwardIncrement = audioPlayer.seekForwardIncrementInSeconds.toString(),
             playlist = playlist,
             currentTrack = currentTrack,
-            playerState = playerState,
+            playback = playback,
         )
     }.stateIn(
         scope = viewModelScope,

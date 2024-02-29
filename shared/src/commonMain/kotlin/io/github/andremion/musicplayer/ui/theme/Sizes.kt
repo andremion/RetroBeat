@@ -14,14 +14,9 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.data.api.deezer
+package io.github.andremion.musicplayer.ui.theme
 
-import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.darwin.Darwin
+import androidx.compose.ui.unit.dp
 
-internal actual fun buildDeezerClient(block: HttpClientConfig<*>.() -> Unit): HttpClient =
-    HttpClient(Darwin) {
-        // No need special configuration for iOS
-        block()
-    }
+val DefaultIconSize = 48.dp
+val SmallIconSize = 32.dp
