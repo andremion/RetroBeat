@@ -14,8 +14,11 @@
  *    limitations under the License.
  */
 
+@file:OptIn(ExperimentalForeignApi::class)
+
 package io.github.andremion.musicplayer.component.player
 
+import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +28,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.datetime.Clock
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
+import platform.AVFoundation.AVPlayerStatusFailed
+import platform.AVFoundation.AVPlayerStatusUnknown
 import platform.AVFoundation.AVPlayerTimeControlStatusPlaying
 import platform.AVFoundation.addBoundaryTimeObserverForTimes
 import platform.AVFoundation.asset
@@ -40,15 +45,20 @@ import platform.AVFoundation.valueWithCMTime
 import platform.CoreMedia.CMTime
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
+import platform.Foundation.NSKeyValueObservingOptionInitial
+import platform.Foundation.NSKeyValueObservingOptionNew
 import platform.Foundation.NSURL.Companion.URLWithString
 import platform.Foundation.NSValue
+import platform.Foundation.addObserver
+import platform.Foundation.removeObserver
+import platform.darwin.NSObject
 import platform.darwin.dispatch_get_main_queue
+import platform.foundation.NSKeyValueObservingProtocol
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalForeignApi::class)
 internal class AudioPlayerImpl : AudioPlayer {
 
-    private var player = AVPlayer()
+    private lateinit var player: AVPlayer
     private var currentItemIndex = 0
     private var tracks = emptyList<AudioPlayer.Track>()
     private var timeObserverToken: Any? = null
@@ -63,8 +73,17 @@ internal class AudioPlayerImpl : AudioPlayer {
     override val playback: StateFlow<AudioPlayer.Playback> = mutablePlayback.asStateFlow()
 
     override fun initialize(onInitialized: () -> Unit) {
-        // iOS doesn't need to asynchronously initialize anything so far
-        onInitialized()
+        if (!::player.isInitialized) {
+            player = AVPlayer().apply {
+                addObserver(
+                    observer = playingObserver,
+                    forKeyPath = "timeControlStatus",
+                    options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
+                    context = null
+                )
+            }
+            onInitialized()
+        }
     }
 
     override fun setTracks(tracks: List<AudioPlayer.Track>) {
@@ -74,7 +93,7 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun playPause() {
-        if (player.timeControlStatus == AVPlayerTimeControlStatusPlaying) {
+        if (player.isPlaying) {
             pause()
         } else {
             play()
@@ -82,9 +101,8 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun play(trackIndex: Int) {
-        setCurrentItem(index = trackIndex) {
-            play()
-        }
+        setCurrentItem(index = trackIndex)
+        play()
     }
 
     override fun updateProgress() {
@@ -106,35 +124,42 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun skipToPrevious() {
+        // Move to the previous track if the current one is not the first one
         val previousIndex = if (currentItemIndex > 0) {
             currentItemIndex - 1
         } else {
+            // Move to the last track if the current one is the first one
+            // and the repeat mode is set to all
             if (playback.value.repeatMode == AudioPlayer.RepeatMode.All) {
                 tracks.size - 1
             } else {
+                // Otherwise, it will seek to the initial time
                 -1
             }
         }
         if (previousIndex == -1) {
-            player.seekToTime(
-                CMTimeMakeWithSeconds(
-                    seconds = 0.0,
-                    preferredTimescale = 1
-                )
-            )
+            seekToInitialTime()
         } else {
             play(previousIndex)
         }
     }
 
     override fun skipToNext() {
-        val nextIndex = if (currentItemIndex < tracks.size - 1) {
-            currentItemIndex + 1
+        // Do not move to the next track if the repeat mode is set to one
+        val nextIndex = if (playback.value.repeatMode == AudioPlayer.RepeatMode.One) {
+            currentItemIndex
         } else {
-            when (playback.value.repeatMode) {
-                AudioPlayer.RepeatMode.One -> currentItemIndex
-                AudioPlayer.RepeatMode.All -> 0
-                AudioPlayer.RepeatMode.Off -> -1
+            // Move to the next track if the current one is not the last one
+            if (currentItemIndex < tracks.size - 1) {
+                currentItemIndex + 1
+            } else {
+                // Move to the first track if the repeat mode is set to all
+                if (playback.value.repeatMode == AudioPlayer.RepeatMode.All) {
+                    0
+                } else {
+                    // Otherwise, it will stop
+                    -1
+                }
             }
         }
         if (nextIndex == -1) {
@@ -171,63 +196,66 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun releasePlayer() {
-        player.pause()
+        stop()
+        player.removeObserver(playingObserver, "timeControlStatus")
     }
 
     private fun play() {
         player.play()
-        mutablePlayback.update { playback ->
-            playback.copy(isPlaying = true)
-        }
         updateProgress()
     }
 
     private fun pause() {
         player.pause()
-        mutablePlayback.update { playback ->
-            playback.copy(isPlaying = false)
-        }
         updateProgress()
     }
 
     private fun stop() {
         player.pause()
-        setCurrentItem(currentItemIndex) {
-            mutablePlayback.update { playback ->
-                playback.copy(isPlaying = false)
-            }
-        }
+        seekToInitialTime()
+        updateProgress()
     }
 
-    private fun setCurrentItem(index: Int, onLoaded: () -> Unit = {}) {
+    private fun seekToInitialTime() {
+        player.seekToTime(
+            CMTimeMakeWithSeconds(
+                seconds = 0.0,
+                preferredTimescale = 1
+            )
+        )
+    }
+
+    private fun setCurrentItem(index: Int) {
         currentItemIndex = index
 
-        // Remove any previous time observer
-        timeObserverToken?.let { timeObserverToken ->
-            player.removeTimeObserver(timeObserverToken)
-            this.timeObserverToken = null
-        }
+        removeCurrentItemObservers()
 
         val currentTrack = tracks[index]
         mutableTrack.update { currentTrack }
 
-        mutablePlayback.update { playback ->
-            playback.copy(isLoading = true)
-        }
-
         val url = URLWithString(currentTrack.uri)!!
         AVPlayerItem(url).apply {
             player.replaceCurrentItemWithPlayerItem(this)
+            addObserver(
+                observer = statusObserver,
+                forKeyPath = "status",
+                options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
+                context = null
+            )
             asset.loadValuesAsynchronouslyForKeys(listOf("duration")) {
                 // Skip to the next track when the current one ends
                 scheduleNextSkipOnEndPlaying(duration = asset.duration)
                 updateProgress()
-                mutablePlayback.update { playback ->
-                    playback.copy(isLoading = false)
-                }
-                onLoaded()
             }
         }
+    }
+
+    private fun removeCurrentItemObservers() {
+        timeObserverToken?.let { timeObserverToken ->
+            player.removeTimeObserver(timeObserverToken)
+            this.timeObserverToken = null
+        }
+        player.currentItem?.removeObserver(statusObserver, "status")
     }
 
     private fun scheduleNextSkipOnEndPlaying(duration: CValue<CMTime>) {
@@ -239,4 +267,40 @@ internal class AudioPlayerImpl : AudioPlayer {
             skipToNext()
         }
     }
+
+    private val statusObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {
+
+        override fun observeValueForKeyPath(
+            keyPath: String?,
+            ofObject: Any?,
+            change: Map<Any?, *>?,
+            context: COpaquePointer?
+        ) {
+            mutablePlayback.update { playback ->
+                playback.copy(
+                    isLoading = player.currentItem?.status == AVPlayerStatusUnknown,
+                    hasError = player.currentItem?.status == AVPlayerStatusFailed
+                )
+            }
+        }
+    }
+
+    private val playingObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {
+
+        override fun observeValueForKeyPath(
+            keyPath: String?,
+            ofObject: Any?,
+            change: Map<Any?, *>?,
+            context: COpaquePointer?
+        ) {
+            mutablePlayback.update { playback ->
+                playback.copy(
+                    isPlaying = player.isPlaying
+                )
+            }
+        }
+    }
 }
+
+private val AVPlayer.isPlaying: Boolean
+    get() = timeControlStatus == AVPlayerTimeControlStatusPlaying
