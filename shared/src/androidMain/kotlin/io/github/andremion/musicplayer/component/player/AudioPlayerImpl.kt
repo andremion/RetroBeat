@@ -77,21 +77,19 @@ internal class AudioPlayerImpl(
     override val playback: StateFlow<AudioPlayer.Playback> = mutablePlayback.asStateFlow()
 
     override fun initialize(onInitialized: () -> Unit) {
-        if (isControllerInitialized) {
-            Napier.w("MediaController is already initialized", tag = LogTag)
-            onInitialized()
+        if (!isControllerInitialized) {
+            // Attaches the media session from the service to the media controller,
+            // so that the media controller can be used to control the media session.
+            val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))
+            controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+            controllerFuture.addListener(
+                {
+                    controllerFuture.get().addListener(listener)
+                    onInitialized()
+                },
+                MoreExecutors.directExecutor()
+            )
         }
-        // Attaches the media session from the service to the media controller,
-        // so that the media controller can be used to control the media session.
-        val sessionToken = SessionToken(context, ComponentName(context, MusicService::class.java))
-        controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
-        controllerFuture.addListener(
-            {
-                controllerFuture.get().addListener(listener)
-                onInitialized()
-            },
-            MoreExecutors.directExecutor()
-        )
     }
 
     override fun setTracks(tracks: List<AudioPlayer.Track>) {

@@ -145,28 +145,14 @@ private fun ScreenContent(
             }
 
             val trackArtwork = currentTrack?.metadata?.artworkUri.toString()
-            val cover = rememberMovableContent(
-                playback.isLoading,
-                playback.hasError,
-                trackArtwork
-            ) { modifier ->
-                Box(
+            val cover = rememberMovableContent(trackArtwork) { modifier ->
+                MusicCover(
                     modifier = modifier.animateBounds(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    MusicCover(
-                        uri = trackArtwork,
-                        transition = sceneTransition,
-                        rotate = transitionState == TransitionState.Playing,
-                        onRotationEnd = { transitionState = TransitionState.Paused }
-                    )
-                    if (playback.isLoading) {
-                        CircularProgressIndicator()
-                    }
-                    if (playback.hasError) {
-                        AudioError()
-                    }
-                }
+                    uri = trackArtwork,
+                    transition = sceneTransition,
+                    rotate = transitionState == TransitionState.Playing,
+                    onRotationEnd = { transitionState = TransitionState.Paused }
+                )
             }
 
             val playPauseButton = rememberMovableContent { modifier ->
@@ -234,15 +220,7 @@ private fun ScreenContent(
                 )
             }
 
-            var position by remember { mutableStateOf(0f) }
-            LaunchedEffect(playback.progress.position) {
-                // Only update the position if it is not transitioning.
-                // This is to avoid the UI glitching during the transition,
-                // because the movable content is gonna re-compose whenever the position changes.
-                if (!transitionState.isTransitioning) {
-                    position = playback.progress.position
-                }
-            }
+            val position = playback.progress.position
             val timeBar = rememberMovableContent(position) { modifier ->
                 TimeBar(
                     modifier = modifier.animateBounds(),
@@ -423,12 +401,20 @@ private fun ScreenContent(
                     artistText(Modifier)
                 }
             } else {
-                Box {
+                Box(
+                    contentAlignment = Alignment.Center,
+                ) {
                     cover(
                         Modifier
                             .height(CoverHeight)
                             .fillMaxWidth()
                     )
+                    if (playback.isLoading) {
+                        CircularProgressIndicator()
+                    }
+                    if (playback.hasError) {
+                        AudioError()
+                    }
                     Column(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
