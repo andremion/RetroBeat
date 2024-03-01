@@ -55,7 +55,7 @@ private const val ROTATION_END_DURATION = 500
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun MusicCover(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     uri: String,
     transition: Float,
     rotate: Boolean,
