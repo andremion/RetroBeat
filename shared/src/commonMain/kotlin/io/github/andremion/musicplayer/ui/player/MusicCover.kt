@@ -20,6 +20,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,7 +55,7 @@ private const val ROTATION_END_DURATION = 500
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun MusicCover(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     uri: String,
     transition: Float,
     rotate: Boolean,
@@ -123,7 +124,8 @@ fun MusicCover(
         resource = asyncPainterResource(uri),
         contentScale = ContentScale.FillWidth,
         contentDescription = stringResource(Res.string.player_music_cover_content_description),
-        animationSpec = tween()
+        animationSpec = tween(),
+        onLoading = { CircularProgressIndicator() },
     )
 }
 

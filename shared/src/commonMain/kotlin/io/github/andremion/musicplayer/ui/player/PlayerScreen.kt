@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Replay
@@ -56,6 +57,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +74,9 @@ import io.github.andremion.musicplayer.ui.animation.SceneRoot
 import io.github.andremion.musicplayer.ui.animation.SlideFromBottom
 import io.github.andremion.musicplayer.ui.animation.rememberLottieComposition
 import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
+import io.github.andremion.musicplayer.ui.component.ErrorView
+import io.github.andremion.musicplayer.ui.theme.DefaultIconSize
+import io.github.andremion.musicplayer.ui.theme.SmallIconSize
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -115,10 +120,12 @@ private fun ScreenContent(
                 .navigationBarsPadding()
                 .fillMaxSize(),
         ) {
+            val currentTrack = uiState.currentTrack
+            val playback = uiState.playback
 
             var transitionState by remember { mutableStateOf(TransitionState.Initial) }
-            LaunchedEffect(uiState.playerState.isPlaying) {
-                if (uiState.playerState.isPlaying) {
+            LaunchedEffect(playback.isPlaying) {
+                if (playback.isPlaying) {
                     transitionState = TransitionState.ToPlaying
                 } else {
                     if (transitionState != TransitionState.Initial) {
@@ -137,15 +144,29 @@ private fun ScreenContent(
                 }
             }
 
-            val trackArtwork = uiState.currentTrack?.metadata?.artworkUri.toString()
-            val cover = rememberMovableContent(trackArtwork) { modifier ->
-                MusicCover(
+            val trackArtwork = currentTrack?.metadata?.artworkUri.toString()
+            val cover = rememberMovableContent(
+                playback.isLoading,
+                playback.hasError,
+                trackArtwork
+            ) { modifier ->
+                Box(
                     modifier = modifier.animateBounds(),
-                    uri = trackArtwork,
-                    transition = sceneTransition,
-                    rotate = transitionState == TransitionState.Playing,
-                    onRotationEnd = { transitionState = TransitionState.Paused }
-                )
+                    contentAlignment = Alignment.Center,
+                ) {
+                    MusicCover(
+                        uri = trackArtwork,
+                        transition = sceneTransition,
+                        rotate = transitionState == TransitionState.Playing,
+                        onRotationEnd = { transitionState = TransitionState.Paused }
+                    )
+                    if (playback.isLoading) {
+                        CircularProgressIndicator()
+                    }
+                    if (playback.hasError) {
+                        AudioError()
+                    }
+                }
             }
 
             val playPauseButton = rememberMovableContent { modifier ->
@@ -168,7 +189,7 @@ private fun ScreenContent(
                 }
             }
 
-            val title = uiState.currentTrack?.metadata?.title.toString()
+            val title = currentTrack?.metadata?.title.orEmpty()
             val titleText = rememberMovableContent(title) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
@@ -180,7 +201,7 @@ private fun ScreenContent(
                 )
             }
 
-            val artist = uiState.currentTrack?.metadata?.artist.toString()
+            val artist = currentTrack?.metadata?.artist.orEmpty()
             val artistText = rememberMovableContent(artist) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
@@ -193,7 +214,7 @@ private fun ScreenContent(
                 )
             }
 
-            val time = uiState.playerState.time.format()
+            val time = playback.progress.time.format()
             val timeText = rememberMovableContent(time) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
@@ -203,7 +224,7 @@ private fun ScreenContent(
                 )
             }
 
-            val duration = uiState.playerState.duration.format()
+            val duration = playback.duration.format()
             val durationText = rememberMovableContent(duration) { modifier ->
                 Text(
                     modifier = modifier.animateBounds(),
@@ -214,12 +235,12 @@ private fun ScreenContent(
             }
 
             var position by remember { mutableStateOf(0f) }
-            LaunchedEffect(uiState.playerState.position) {
+            LaunchedEffect(playback.progress.position) {
                 // Only update the position if it is not transitioning.
                 // This is to avoid the UI glitching during the transition,
                 // because the movable content is gonna re-compose whenever the position changes.
                 if (!transitionState.isTransitioning) {
-                    position = uiState.playerState.position
+                    position = playback.progress.position
                 }
             }
             val timeBar = rememberMovableContent(position) { modifier ->
@@ -241,11 +262,16 @@ private fun ScreenContent(
                     .onSuccess { playlist ->
                         Playlist(
                             playlist = playlist,
-                            selectedMusicId = uiState.currentTrack?.id,
+                            selectedMusicId = currentTrack?.id,
                             topBarPaddingTop = PlayButtonSize / 2,
                             onMusicClick = { musicIndex ->
                                 onUiEvent(PlayerUiEvent.MusicClick(musicIndex))
                             }
+                        )
+                    }.onFailure { cause ->
+                        ErrorView(
+                            cause = cause,
+                            onRetryClick = { onUiEvent(PlayerUiEvent.RetryClick) }
                         )
                     }
             }
@@ -260,17 +286,17 @@ private fun ScreenContent(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     IconToggleButton(
-                        checked = uiState.playerState.repeatMode != AudioPlayer.RepeatMode.Off,
+                        checked = playback.repeatMode != AudioPlayer.RepeatMode.Off,
                         onCheckedChange = { onUiEvent(PlayerUiEvent.RepeatClick) }
                     ) {
                         Icon(
                             modifier = Modifier.size(SmallIconSize),
-                            imageVector = when (uiState.playerState.repeatMode) {
+                            imageVector = when (playback.repeatMode) {
                                 AudioPlayer.RepeatMode.Off -> Icons.Rounded.Repeat
                                 AudioPlayer.RepeatMode.One -> Icons.Rounded.RepeatOne
                                 AudioPlayer.RepeatMode.All -> Icons.Rounded.Repeat
                             },
-                            contentDescription = when (uiState.playerState.repeatMode) {
+                            contentDescription = when (playback.repeatMode) {
                                 AudioPlayer.RepeatMode.Off -> "Repeat mode off"
                                 AudioPlayer.RepeatMode.One -> "Repeat mode one"
                                 AudioPlayer.RepeatMode.All -> "Repeat mode all"
@@ -278,13 +304,13 @@ private fun ScreenContent(
                         )
                     }
                     IconToggleButton(
-                        checked = uiState.playerState.isShuffleModeOn,
+                        checked = playback.isShuffleModeOn,
                         onCheckedChange = { onUiEvent(PlayerUiEvent.ShuffleClick) },
                     ) {
                         Icon(
                             modifier = Modifier.size(SmallIconSize),
                             imageVector = Icons.Rounded.Shuffle,
-                            contentDescription = if (uiState.playerState.isShuffleModeOn) {
+                            contentDescription = if (playback.isShuffleModeOn) {
                                 "Shuffle mode on"
                             } else {
                                 "Shuffle mode off"
@@ -436,7 +462,17 @@ private fun ScreenContent(
     }
 }
 
+@Composable
+private fun AudioError() {
+    Icon(
+        modifier = Modifier
+            .size(DefaultIconSize)
+            .clip(CircleShape)
+            .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
+        imageVector = Icons.Rounded.ErrorOutline,
+        contentDescription = null,
+    )
+}
+
 private val CoverHeight = 256.dp
 private val PlayButtonSize = 64.dp
-private val DefaultIconSize = 48.dp
-private val SmallIconSize = 32.dp

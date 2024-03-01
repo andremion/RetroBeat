@@ -22,7 +22,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -32,15 +35,24 @@ class DiscoveryViewModel(
     musicRepository: MusicRepository,
 ) : ViewModel() {
 
-    val uiState: StateFlow<DiscoveryUiState> = musicRepository.getPlaylists()
-        .map { playlists ->
-            DiscoveryUiState(playlists = AsyncContent.success(playlists))
+    private val retry = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    private val playlists = musicRepository.getPlaylists()
+        .map(AsyncContent.Companion::success)
+        .retryWhen { cause, _ ->
+            emit(AsyncContent.failure(cause))
+            retry.first()
+            emit(AsyncContent.loading())
+            true
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = DiscoveryUiState()
-        )
+
+    val uiState: StateFlow<DiscoveryUiState> = combine(playlists) { (playlists) ->
+        DiscoveryUiState(playlists)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = DiscoveryUiState()
+    )
 
     private val mutableUiEffect = MutableSharedFlow<DiscoveryUiEffect>(extraBufferCapacity = 1)
     val uiEffect: SharedFlow<DiscoveryUiEffect> = mutableUiEffect
@@ -54,6 +66,8 @@ class DiscoveryViewModel(
             is DiscoveryUiEvent.PlaylistClick -> {
                 mutableUiEffect.tryEmit(DiscoveryUiEffect.NavigateToPlayer(event.playlistId))
             }
+
+            DiscoveryUiEvent.RetryClick -> retry.tryEmit(Unit)
         }
     }
 }

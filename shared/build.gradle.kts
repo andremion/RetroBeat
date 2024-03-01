@@ -17,6 +17,11 @@ kotlin {
             baseName = "shared"
             isStatic = true
         }
+        target.compilations.getByName("main") {
+            // https://kotlinlang.org/docs/multiplatform-dsl-reference.html#cinterops
+            // The default file path is src/nativeInterop/cinterop/<interop-name>.def
+            val nskeyvalueobserving by cinterops.creating
+        }
     }
 
     sourceSets {

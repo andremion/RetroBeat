@@ -25,5 +25,5 @@ data class PlayerUiState(
     val seekForwardIncrement: String = "",
     val playlist: AsyncContent<Playlist> = AsyncContent.loading(),
     val currentTrack: AudioPlayer.Track? = null,
-    val playerState: AudioPlayer.State = AudioPlayer.State(),
+    val playback: AudioPlayer.Playback = AudioPlayer.Playback(),
 )

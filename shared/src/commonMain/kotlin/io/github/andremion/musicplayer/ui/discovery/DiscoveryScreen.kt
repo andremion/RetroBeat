@@ -34,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.andremion.musicplayer.domain.entity.Playlist
@@ -42,6 +42,7 @@ import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiEffect
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiEvent
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiState
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryViewModel
+import io.github.andremion.musicplayer.ui.component.ErrorView
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.flow.launchIn
@@ -79,16 +80,16 @@ private fun ScreenContent(
         Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             uiState.playlists
                 .onLoading {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Center)
-                    )
+                    CircularProgressIndicator()
                 }
                 .onSuccess { playlists ->
                     LazyVerticalStaggeredGrid(
+                        modifier = Modifier.fillMaxSize(),
                         columns = StaggeredGridCells.Adaptive(GridColumnSize),
                         verticalItemSpacing = 8.dp,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -114,6 +115,11 @@ private fun ScreenContent(
                             }
                         }
                     }
+                }.onFailure { cause ->
+                    ErrorView(
+                        cause = cause,
+                        onRetryClick = { onUiEvent(DiscoveryUiEvent.RetryClick) }
+                    )
                 }
         }
     }

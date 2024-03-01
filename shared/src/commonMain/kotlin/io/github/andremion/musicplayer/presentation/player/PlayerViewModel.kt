@@ -23,10 +23,13 @@ import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.github.andremion.musicplayer.presentation.AsyncContent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -40,15 +43,23 @@ class PlayerViewModel(
 
     private var updateProgressJob: Job? = null
 
+    private val retry = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     private val playlist = repository.getPlaylist(playlistId)
         .onEach(::initializePlayer)
         .map(AsyncContent.Companion::success)
+        .retryWhen { cause, _ ->
+            emit(AsyncContent.failure(cause))
+            retry.first()
+            emit(AsyncContent.loading())
+            true
+        }
 
     private val currentTrack = audioPlayer.currentTrack
 
-    private val playerState = audioPlayer.state.onEach { state ->
+    private val playback = audioPlayer.playback.onEach { playback ->
         updateProgressJob?.cancel()
-        if (state.isPlaying) {
+        if (playback.isPlaying) {
             requestDelayedProgressUpdate()
         }
     }
@@ -56,14 +67,14 @@ class PlayerViewModel(
     val uiState = combine(
         playlist,
         currentTrack,
-        playerState,
-    ) { playlist, currentTrack, playerState ->
+        playback,
+    ) { playlist, currentTrack, playback ->
         PlayerUiState(
             seekBackIncrement = audioPlayer.seekBackIncrementInSeconds.toString(),
             seekForwardIncrement = audioPlayer.seekForwardIncrementInSeconds.toString(),
             playlist = playlist,
             currentTrack = currentTrack,
-            playerState = playerState,
+            playback = playback,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -104,6 +115,8 @@ class PlayerViewModel(
             is PlayerUiEvent.MusicClick -> {
                 audioPlayer.play(trackIndex = event.musicIndex)
             }
+
+            PlayerUiEvent.RetryClick -> retry.tryEmit(Unit)
         }
     }
 

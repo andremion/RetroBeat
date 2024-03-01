@@ -28,14 +28,18 @@ import androidx.compose.ui.Modifier
  * when it's moved from one parent to another.
  *
  * There are some cases that we do want to re-compose the content due to the data changes.
- * In this case, we can use the [key] parameter to re-invalidate the remembered content.
+ * In this case, we can optionally use the [key1], [key2], [key3] parameters to re-invalidate the remembered content.
  *
- * @param key A key to re-invalidate the remembered content.
+ * @param key1 An optional key to re-invalidate the remembered content.
+ * @param key2 An optional key to re-invalidate the remembered content.
+ * @param key3 An optional key to re-invalidate the remembered content.
  * @param content A movable Composable content that will be remembered.
  */
 @Composable
 inline fun rememberMovableContent(
-    key: Any? = null,
+    key1: Any? = null,
+    key2: Any? = null,
+    key3: Any? = null,
     crossinline content: @Composable (modifier: Modifier) -> Unit
 ): @Composable (modifier: Modifier) -> Unit =
-    remember(key) { movableContentOf { modifier -> content(modifier) } }
+    remember(key1, key2, key3) { movableContentOf { modifier -> content(modifier) } }

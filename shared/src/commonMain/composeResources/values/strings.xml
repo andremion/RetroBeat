@@ -1,4 +1,10 @@
 <resources>
+    <string name="error_retry_button">Retry</string>
+    <string name="internet_connection_error_title">No internet connection</string>
+    <string name="internet_connection_error_message">It looks like you're offline</string>
+    <string name="generic_error_title">Oops!</string>
+    <string name="generic_error_message">Something went wrong</string>
+
     <string name="player_playlist_track_count">%1$d tracks</string>
     <string name="player_playlist_album_art_content_description">Album art</string>
     <string name="player_playlist_options_content_description">Playlist options</string>
