@@ -39,10 +39,8 @@ The solution is flexible enough to support another source.
 
 ## TODO
 
-- Cache the selected playlist
-- Navigate directly to the selected playlist from the launcher
+- Cache the selected playlist and navigate directly to the selected playlist from the launcher
 - Add integration tests
-- Add better transition from the playlist to the player screen
 
 ## References
 

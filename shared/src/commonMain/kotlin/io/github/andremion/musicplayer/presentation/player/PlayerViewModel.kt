@@ -24,12 +24,14 @@ import io.github.andremion.musicplayer.presentation.AsyncContent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -82,6 +84,13 @@ class PlayerViewModel(
         initialValue = PlayerUiState()
     )
 
+    private val mutableUiEffect = MutableSharedFlow<PlayerUiEffect>(extraBufferCapacity = 1)
+    val uiEffect: SharedFlow<PlayerUiEffect> = mutableUiEffect
+        .shareIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+        )
+
     fun onUiEvent(event: PlayerUiEvent) {
         when (event) {
             PlayerUiEvent.PlayPauseClick -> {
@@ -116,7 +125,13 @@ class PlayerViewModel(
                 audioPlayer.play(trackIndex = event.musicIndex)
             }
 
-            PlayerUiEvent.RetryClick -> retry.tryEmit(Unit)
+            PlayerUiEvent.RetryClick -> {
+                retry.tryEmit(Unit)
+            }
+
+            PlayerUiEvent.ClearPlaylistClick -> {
+                mutableUiEffect.tryEmit(PlayerUiEffect.NavigateToDiscovery)
+            }
         }
     }
 

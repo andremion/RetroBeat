@@ -16,15 +16,6 @@
 
 package io.github.andremion.musicplayer.presentation.player
 
-sealed interface PlayerUiEvent {
-    data object PlayPauseClick : PlayerUiEvent
-    data object SkipToPrevious : PlayerUiEvent
-    data object SkipToNext : PlayerUiEvent
-    data object SeekBackward : PlayerUiEvent
-    data object SeekForward : PlayerUiEvent
-    data object RepeatClick : PlayerUiEvent
-    data object ShuffleClick : PlayerUiEvent
-    data class MusicClick(val musicIndex: Int) : PlayerUiEvent
-    data object RetryClick : PlayerUiEvent
-    data object ClearPlaylistClick : PlayerUiEvent
+sealed interface PlayerUiEffect {
+    data object NavigateToDiscovery : PlayerUiEffect
 }

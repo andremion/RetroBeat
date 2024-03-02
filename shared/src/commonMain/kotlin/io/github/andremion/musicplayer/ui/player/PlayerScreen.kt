@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.compottie.LottieAnimation
 import io.github.andremion.musicplayer.component.player.AudioPlayer
 import io.github.andremion.musicplayer.component.time.format
+import io.github.andremion.musicplayer.presentation.player.PlayerUiEffect
 import io.github.andremion.musicplayer.presentation.player.PlayerUiEvent
 import io.github.andremion.musicplayer.presentation.player.PlayerUiState
 import io.github.andremion.musicplayer.presentation.player.PlayerViewModel
@@ -77,6 +78,8 @@ import io.github.andremion.musicplayer.ui.animation.rememberMovableContent
 import io.github.andremion.musicplayer.ui.component.ErrorView
 import io.github.andremion.musicplayer.ui.theme.DefaultIconSize
 import io.github.andremion.musicplayer.ui.theme.SmallIconSize
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import moe.tlaster.precompose.flow.collectAsStateWithLifecycle
 import moe.tlaster.precompose.koin.koinViewModel
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -89,7 +92,10 @@ import retrobeat.shared.generated.resources.player_skip_to_next_content_descript
 import retrobeat.shared.generated.resources.player_skip_to_previous_content_description
 
 @Composable
-fun PlayerScreen(playlistId: String) {
+fun PlayerScreen(
+    playlistId: String,
+    onNavigateToDiscovery: () -> Unit
+) {
     val viewModel = koinViewModel(PlayerViewModel::class) {
         parametersOf(playlistId)
     }
@@ -97,6 +103,16 @@ fun PlayerScreen(playlistId: String) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     ScreenContent(uiState, viewModel::onUiEvent)
+
+    LaunchedEffect(viewModel) {
+        viewModel.uiEffect.onEach { effect ->
+            when (effect) {
+                is PlayerUiEffect.NavigateToDiscovery -> {
+                    onNavigateToDiscovery()
+                }
+            }
+        }.launchIn(this)
+    }
 }
 
 private enum class TransitionState {
@@ -244,7 +260,8 @@ private fun ScreenContent(
                             topBarPaddingTop = PlayButtonSize / 2,
                             onMusicClick = { musicIndex ->
                                 onUiEvent(PlayerUiEvent.MusicClick(musicIndex))
-                            }
+                            },
+                            onMenuClearClick = { onUiEvent(PlayerUiEvent.ClearPlaylistClick) }
                         )
                     }.onFailure { cause ->
                         ErrorView(

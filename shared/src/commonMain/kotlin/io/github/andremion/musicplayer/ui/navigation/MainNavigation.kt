@@ -22,6 +22,8 @@ import androidx.compose.runtime.Composable
 import io.github.andremion.musicplayer.ui.discovery.DiscoveryScreen
 import io.github.andremion.musicplayer.ui.player.PlayerScreen
 import moe.tlaster.precompose.navigation.NavHost
+import moe.tlaster.precompose.navigation.NavOptions
+import moe.tlaster.precompose.navigation.PopUpTo
 import moe.tlaster.precompose.navigation.query
 import moe.tlaster.precompose.navigation.rememberNavigator
 
@@ -35,13 +37,28 @@ fun MainNavigation() {
         scene(route = "discovery") {
             DiscoveryScreen(
                 onNavigateToPlayer = { playlistId ->
-                    navigator.navigate("player?playlistId=$playlistId")
+                    navigator.navigate(
+                        route = "player?playlistId=$playlistId",
+                        options = NavOptions(
+                            popUpTo = PopUpTo.First(true)
+                        )
+                    )
                 }
             )
         }
         scene(route = "player") { backStackEntry ->
             val playlistId = requireNotNull(backStackEntry.query<String>("playlistId"))
-            PlayerScreen(playlistId)
+            PlayerScreen(
+                playlistId = playlistId,
+                onNavigateToDiscovery = {
+                    navigator.navigate(
+                        route = "discovery",
+                        options = NavOptions(
+                            popUpTo = PopUpTo.First(true)
+                        )
+                    )
+                }
+            )
         }
     }
 }
