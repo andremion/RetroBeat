@@ -43,7 +43,6 @@ The solution is flexible enough to support another source.
 - Navigate directly to the selected playlist from the launcher
 - Add integration tests
 - Add better transition from the playlist to the player screen
-- Handle loading errors
 
 ## References
 

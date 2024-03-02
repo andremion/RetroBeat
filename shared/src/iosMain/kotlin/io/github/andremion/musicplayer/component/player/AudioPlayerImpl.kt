@@ -62,6 +62,7 @@ internal class AudioPlayerImpl : AudioPlayer {
     private var currentItemIndex = 0
     private var tracks = emptyList<AudioPlayer.Track>()
     private var timeObserverToken: Any? = null
+    private var shuffleIndices = emptyList<Int>()
 
     override val seekBackIncrementInSeconds: Int = DEFAULT_SEEK_BACK_INCREMENT
     override val seekForwardIncrementInSeconds: Int = DEFAULT_SEEK_FORWARD_INCREMENT
@@ -192,7 +193,13 @@ internal class AudioPlayerImpl : AudioPlayer {
     }
 
     override fun toggleShuffleMode() {
-        TODO("Not yet implemented")
+        mutablePlayback.update { playback ->
+            val isShuffleModeOn = !playback.isShuffleModeOn
+            if (isShuffleModeOn) {
+                shuffleIndices = tracks.indices.shuffled()
+            }
+            playback.copy(isShuffleModeOn = isShuffleModeOn)
+        }
     }
 
     override fun releasePlayer() {
@@ -230,7 +237,11 @@ internal class AudioPlayerImpl : AudioPlayer {
 
         removeCurrentItemObservers()
 
-        val currentTrack = tracks[index]
+        val currentTrack = if (playback.value.isShuffleModeOn) {
+            tracks[shuffleIndices[index]]
+        } else {
+            tracks[index]
+        }
         mutableTrack.update { currentTrack }
 
         val url = URLWithString(currentTrack.uri)!!
