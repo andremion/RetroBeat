@@ -81,7 +81,7 @@ internal class MediaControllerListener(
         } else {
             Napier.w(
                 "COMMAND_GET_CURRENT_MEDIA_ITEM or COMMAND_GET_METADATA is not available",
-                tag = AudioPlayerImpl.LogTag
+                tag = AudioPlayer.LogTag
             )
         }
     }
@@ -112,7 +112,7 @@ internal class MediaControllerListener(
                 playback.copy(isPlaying = mediaController.isPlaying)
             }
         } else {
-            Napier.w("COMMAND_PLAY_PAUSE is not available", tag = AudioPlayerImpl.LogTag)
+            Napier.w("COMMAND_PLAY_PAUSE is not available", tag = AudioPlayer.LogTag)
         }
     }
 
@@ -136,7 +136,7 @@ internal class MediaControllerListener(
                 )
             }
         } else {
-            Napier.w("COMMAND_GET_CURRENT_MEDIA_ITEM is not available", tag = AudioPlayerImpl.LogTag)
+            Napier.w("COMMAND_GET_CURRENT_MEDIA_ITEM is not available", tag = AudioPlayer.LogTag)
         }
     }
 
@@ -146,7 +146,7 @@ internal class MediaControllerListener(
                 playback.copy(repeatMode = map(mediaController.repeatMode))
             }
         } else {
-            Napier.w("COMMAND_SET_REPEAT_MODE is not available", tag = AudioPlayerImpl.LogTag)
+            Napier.w("COMMAND_SET_REPEAT_MODE is not available", tag = AudioPlayer.LogTag)
         }
     }
 
@@ -156,7 +156,7 @@ internal class MediaControllerListener(
                 playback.copy(isShuffleModeOn = mediaController.shuffleModeEnabled)
             }
         } else {
-            Napier.w("COMMAND_SET_SHUFFLE_MODE is not available", tag = AudioPlayerImpl.LogTag)
+            Napier.w("COMMAND_SET_SHUFFLE_MODE is not available", tag = AudioPlayer.LogTag)
         }
     }
 
@@ -178,7 +178,7 @@ private fun log(events: Player.Events) {
     (0 until events.size())
         .map { events[it] }
         .joinToString(",")
-        .also { Napier.d("Player.Events=$it", tag = AudioPlayerImpl.LogTag) }
+        .also { Napier.d("Player.Events=$it", tag = AudioPlayer.LogTag) }
 }
 
 private fun map(@RepeatMode repeatMode: Int): AudioPlayer.RepeatMode =

@@ -18,6 +18,7 @@
 
 package io.github.andremion.musicplayer.component.player
 
+import io.github.aakira.napier.Napier
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -26,6 +27,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.Clock
+import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryPlayback
+import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
+import platform.AVFAudio.setActive
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerStatusFailed
@@ -59,6 +64,7 @@ import kotlin.time.Duration.Companion.seconds
 internal class AudioPlayerImpl : AudioPlayer {
 
     private lateinit var player: AVPlayer
+    private lateinit var audioSession: AVAudioSession
     private var currentItemIndex = 0
     private var tracks = emptyList<AudioPlayer.Track>()
     private var timeObserverToken: Any? = null
@@ -82,6 +88,15 @@ internal class AudioPlayerImpl : AudioPlayer {
                     options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
                     context = null
                 )
+            }
+            audioSession = AVAudioSession.sharedInstance()
+            try {
+                audioSession.setCategory(
+                    category = AVAudioSessionCategoryPlayback,
+                    error = null
+                )
+            } catch (e: Exception) {
+                Napier.w("Failed to set the audio session configuration", tag = AudioPlayer.LogTag)
             }
             onInitialized()
         }
@@ -207,7 +222,28 @@ internal class AudioPlayerImpl : AudioPlayer {
         player.removeObserver(playingObserver, "timeControlStatus")
     }
 
+    private fun activateAudioSession() {
+        updateAudioSessionActive(active = true)
+    }
+
+    private fun deactivateAudioSession() {
+        updateAudioSessionActive(active = false)
+    }
+
+    private fun updateAudioSessionActive(active: Boolean) {
+        try {
+            audioSession.setActive(
+                active = active,
+                withOptions = AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation,
+                error = null
+            )
+        } catch (e: Exception) {
+            Napier.w("Failed to update the audio session active to $active", tag = AudioPlayer.LogTag)
+        }
+    }
+
     private fun play() {
+        activateAudioSession()
         player.play()
         updateProgress()
     }
@@ -215,12 +251,14 @@ internal class AudioPlayerImpl : AudioPlayer {
     private fun pause() {
         player.pause()
         updateProgress()
+        deactivateAudioSession()
     }
 
     private fun stop() {
         player.pause()
         seekToInitialTime()
         updateProgress()
+        deactivateAudioSession()
     }
 
     private fun seekToInitialTime() {

@@ -31,6 +31,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import io.github.aakira.napier.Napier
+import io.github.andremion.musicplayer.component.player.AudioPlayer.Companion.LogTag
 import io.github.andremion.musicplayer.component.player.service.MusicService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,10 +40,6 @@ import kotlinx.coroutines.flow.asStateFlow
 internal class AudioPlayerImpl(
     private val context: Context
 ) : AudioPlayer {
-
-    companion object {
-        const val LogTag = "AudioPlayer"
-    }
 
     private lateinit var controllerFuture: ListenableFuture<MediaController>
 

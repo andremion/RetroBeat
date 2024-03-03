@@ -25,6 +25,10 @@ internal const val DEFAULT_SEEK_FORWARD_INCREMENT = 15
 
 interface AudioPlayer {
 
+    companion object {
+        const val LogTag = "AudioPlayer"
+    }
+
     val seekBackIncrementInSeconds: Int
     val seekForwardIncrementInSeconds: Int
 
