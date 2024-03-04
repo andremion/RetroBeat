@@ -83,7 +83,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         if (!::player.isInitialized) {
             player = AVPlayer().apply {
                 addObserver(
-                    observer = playingObserver,
+                    observer = timeControlObserver,
                     forKeyPath = "timeControlStatus",
                     options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
                     context = null
@@ -219,7 +219,7 @@ internal class AudioPlayerImpl : AudioPlayer {
 
     override fun releasePlayer() {
         stop()
-        player.removeObserver(playingObserver, "timeControlStatus")
+        player.removeObserver(timeControlObserver, "timeControlStatus")
     }
 
     private fun activateAudioSession() {
@@ -286,7 +286,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         AVPlayerItem(url).apply {
             player.replaceCurrentItemWithPlayerItem(this)
             addObserver(
-                observer = statusObserver,
+                observer = itemStatusObserver,
                 forKeyPath = "status",
                 options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
                 context = null
@@ -304,7 +304,7 @@ internal class AudioPlayerImpl : AudioPlayer {
             player.removeTimeObserver(timeObserverToken)
             this.timeObserverToken = null
         }
-        player.currentItem?.removeObserver(statusObserver, "status")
+        player.currentItem?.removeObserver(itemStatusObserver, "status")
     }
 
     private fun scheduleNextSkipOnEndPlaying(duration: CValue<CMTime>) {
@@ -317,7 +317,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         }
     }
 
-    private val statusObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {
+    private val itemStatusObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {
 
         override fun observeValueForKeyPath(
             keyPath: String?,
@@ -334,7 +334,7 @@ internal class AudioPlayerImpl : AudioPlayer {
         }
     }
 
-    private val playingObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {
+    private val timeControlObserver: NSObject = object : NSObject(), NSKeyValueObservingProtocol {
 
         override fun observeValueForKeyPath(
             keyPath: String?,

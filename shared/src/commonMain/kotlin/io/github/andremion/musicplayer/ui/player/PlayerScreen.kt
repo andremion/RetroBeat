@@ -120,9 +120,6 @@ private enum class TransitionState {
 
     val isPlaying: Boolean
         get() = this == Playing || this == ToPlaying || this == ToPaused
-
-    val isTransitioning: Boolean
-        get() = this == ToPlaying || this == ToPaused
 }
 
 @Composable
