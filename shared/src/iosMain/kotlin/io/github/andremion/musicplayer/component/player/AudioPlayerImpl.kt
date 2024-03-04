@@ -50,7 +50,6 @@ import platform.AVFoundation.valueWithCMTime
 import platform.CoreMedia.CMTime
 import platform.CoreMedia.CMTimeGetSeconds
 import platform.CoreMedia.CMTimeMakeWithSeconds
-import platform.Foundation.NSKeyValueObservingOptionInitial
 import platform.Foundation.NSKeyValueObservingOptionNew
 import platform.Foundation.NSURL.Companion.URLWithString
 import platform.Foundation.NSValue
@@ -85,7 +84,7 @@ internal class AudioPlayerImpl : AudioPlayer {
                 addObserver(
                     observer = timeControlObserver,
                     forKeyPath = "timeControlStatus",
-                    options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
+                    options = NSKeyValueObservingOptionNew,
                     context = null
                 )
             }
@@ -288,7 +287,7 @@ internal class AudioPlayerImpl : AudioPlayer {
             addObserver(
                 observer = itemStatusObserver,
                 forKeyPath = "status",
-                options = NSKeyValueObservingOptionInitial and NSKeyValueObservingOptionNew,
+                options = NSKeyValueObservingOptionNew,
                 context = null
             )
             asset.loadValuesAsynchronouslyForKeys(listOf("duration")) {
