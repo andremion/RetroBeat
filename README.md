@@ -42,6 +42,11 @@ The solution is flexible enough to support another source.
 - Cache the selected playlist and navigate directly to the selected playlist from the launcher
 - Add integration tests
 
+## Articles
+
+- [Leveraging Key-Value Observing (KVO) in Kotlin Multiplatform (KMP) for iOS](https://andremion.medium.com/leveraging-key-value-observing-kvo-in-kotlin-multiplatform-kmp-for-ios-231519e5c1ff)
+- [Music Player: From UI proposal to code](https://medium.com/@andremion/music-player-3a85864d6df7)
+
 ## References
 
 - [Quick guide to Animations in Compose](https://developer.android.com/jetpack/compose/animation/quick-guide)
