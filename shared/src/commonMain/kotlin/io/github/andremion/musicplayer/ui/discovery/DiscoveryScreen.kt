@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +41,8 @@ import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiEffect
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiEvent
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiState
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryViewModel
+import io.github.andremion.musicplayer.ui.animation.LoadingPlaceholder
+import io.github.andremion.musicplayer.ui.animation.loadingEffect
 import io.github.andremion.musicplayer.ui.component.ErrorView
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -85,7 +86,23 @@ private fun ScreenContent(
         ) {
             uiState.playlists
                 .onLoading {
-                    CircularProgressIndicator()
+                    LazyVerticalStaggeredGrid(
+                        modifier = Modifier.fillMaxSize(),
+                        columns = StaggeredGridCells.Adaptive(GridColumnSize),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(16.dp),
+                    ) {
+                        items(6) {
+                            Card {
+                                LoadingPlaceholder(
+                                    modifier = Modifier
+                                        .aspectRatio(1f)
+                                        .loadingEffect(),
+                                )
+                            }
+                        }
+                    }
                 }
                 .onSuccess { playlists ->
                     LazyVerticalStaggeredGrid(
