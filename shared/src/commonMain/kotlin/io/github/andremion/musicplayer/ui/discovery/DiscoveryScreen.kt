@@ -41,9 +41,8 @@ import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiEffect
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiEvent
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryUiState
 import io.github.andremion.musicplayer.presentation.discovery.DiscoveryViewModel
-import io.github.andremion.musicplayer.ui.animation.LoadingPlaceholder
-import io.github.andremion.musicplayer.ui.animation.loadingEffect
 import io.github.andremion.musicplayer.ui.component.ErrorView
+import io.github.andremion.musicplayer.ui.component.LoadingPlaceholder
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.flow.launchIn
@@ -96,9 +95,7 @@ private fun ScreenContent(
                         items(6) {
                             Card {
                                 LoadingPlaceholder(
-                                    modifier = Modifier
-                                        .aspectRatio(1f)
-                                        .loadingEffect(),
+                                    modifier = Modifier.aspectRatio(1f)
                                 )
                             }
                         }

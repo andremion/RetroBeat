@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.github.andremion.musicplayer.ui.animation
+package io.github.andremion.musicplayer.ui.component
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
