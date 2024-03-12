@@ -19,6 +19,7 @@ package io.github.andremion.musicplayer
 import android.app.Application
 import io.github.andremion.musicplayer.di.initDI
 import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
 
 class MainApp : Application() {
 
@@ -27,6 +28,9 @@ class MainApp : Application() {
 
         initLogging()
 
-        initDI().androidContext(this)
+        initDI {
+            androidContext(this@MainApp)
+            androidLogger()
+        }
     }
 }

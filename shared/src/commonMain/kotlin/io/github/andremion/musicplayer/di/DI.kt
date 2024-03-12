@@ -21,9 +21,11 @@ import io.github.andremion.musicplayer.data.di.DataModule
 import io.github.andremion.musicplayer.presentation.di.PresentationModule
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
+import org.koin.dsl.KoinAppDeclaration
 
-fun initDI(): KoinApplication =
+fun initDI(appDeclaration: KoinAppDeclaration): KoinApplication =
     startKoin {
+        appDeclaration()
         modules(
             PlayerModule.module,
             DataModule.module,
