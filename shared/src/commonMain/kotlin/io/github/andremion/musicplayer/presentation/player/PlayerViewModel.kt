@@ -22,16 +22,17 @@ import io.github.andremion.musicplayer.domain.entity.Music
 import io.github.andremion.musicplayer.domain.entity.Playlist
 import io.github.andremion.musicplayer.presentation.AsyncContent
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -84,12 +85,8 @@ class PlayerViewModel(
         initialValue = PlayerUiState()
     )
 
-    private val mutableUiEffect = MutableSharedFlow<PlayerUiEffect>(extraBufferCapacity = 1)
-    val uiEffect: SharedFlow<PlayerUiEffect> = mutableUiEffect
-        .shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-        )
+    private val uiEffectChannel = Channel<PlayerUiEffect>()
+    val uiEffect: Flow<PlayerUiEffect> = uiEffectChannel.consumeAsFlow()
 
     fun onUiEvent(event: PlayerUiEvent) {
         when (event) {
@@ -130,7 +127,7 @@ class PlayerViewModel(
             }
 
             PlayerUiEvent.ClearPlaylistClick -> {
-                mutableUiEffect.tryEmit(PlayerUiEffect.NavigateToDiscovery)
+                uiEffectChannel.trySend(PlayerUiEffect.NavigateToDiscovery)
             }
         }
     }

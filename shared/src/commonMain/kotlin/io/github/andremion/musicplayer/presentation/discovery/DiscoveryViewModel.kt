@@ -18,15 +18,16 @@ package io.github.andremion.musicplayer.presentation.discovery
 
 import io.github.andremion.musicplayer.domain.MusicRepository
 import io.github.andremion.musicplayer.presentation.AsyncContent
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import moe.tlaster.precompose.viewmodel.ViewModel
 import moe.tlaster.precompose.viewmodel.viewModelScope
@@ -54,17 +55,13 @@ class DiscoveryViewModel(
         initialValue = DiscoveryUiState()
     )
 
-    private val mutableUiEffect = MutableSharedFlow<DiscoveryUiEffect>(extraBufferCapacity = 1)
-    val uiEffect: SharedFlow<DiscoveryUiEffect> = mutableUiEffect
-        .shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-        )
+    private val uiEffectChannel = Channel<DiscoveryUiEffect>()
+    val uiEffect: Flow<DiscoveryUiEffect> = uiEffectChannel.consumeAsFlow()
 
     fun onUiEvent(event: DiscoveryUiEvent) {
         when (event) {
             is DiscoveryUiEvent.PlaylistClick -> {
-                mutableUiEffect.tryEmit(DiscoveryUiEffect.NavigateToPlayer(event.playlistId))
+                uiEffectChannel.trySend(DiscoveryUiEffect.NavigateToPlayer(event.playlistId))
             }
 
             DiscoveryUiEvent.RetryClick -> retry.tryEmit(Unit)
