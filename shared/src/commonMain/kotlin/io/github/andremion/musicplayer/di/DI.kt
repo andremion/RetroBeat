@@ -23,9 +23,9 @@ import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
-fun initDI(appDeclaration: KoinAppDeclaration): KoinApplication =
+fun initDI(appDeclaration: KoinAppDeclaration? = null): KoinApplication =
     startKoin {
-        appDeclaration()
+        appDeclaration?.invoke(this)
         modules(
             PlayerModule.module,
             DataModule.module,
