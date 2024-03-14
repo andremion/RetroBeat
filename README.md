@@ -1,4 +1,6 @@
-<img alt="RetroBeat icon" src="https://github.com/andremion/RetroBeat/blob/10eeb0bf743224c36f43d753af785d0b89eea893/androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" width=100 align=left>
+<img alt="RetroBeat icon" src="https://github.com/andremion/RetroBeat/blob/main/androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png" width=100 align=left>
+
+[![CI](https://github.com/andremion/RetroBeat/actions/workflows/ci.yml/badge.svg)](https://github.com/andremion/RetroBeat/actions/workflows/ci.yml)
 
 # RetroBeat
 
