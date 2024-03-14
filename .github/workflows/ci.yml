@@ -1,4 +1,4 @@
-name: Android CI
+name: CI
 
 on:
   push:
@@ -8,19 +8,22 @@ on:
 
 jobs:
   build:
-
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@v4
-      - name: set up JDK 17
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
           cache: gradle
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Build with Gradle
+
+      - name: Build androidApp
         run: ./gradlew androidApp:build
+
+      - name: Build iosApp
+        run: xcodebuild build -project iosApp/iosApp.xcodeproj -configuration Debug -scheme iosApp -sdk iphoneos -destination name='iPhone 15 Pro' -verbose
