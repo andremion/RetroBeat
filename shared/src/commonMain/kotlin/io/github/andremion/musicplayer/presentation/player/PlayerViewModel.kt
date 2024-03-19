@@ -28,10 +28,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -86,7 +86,7 @@ class PlayerViewModel(
     )
 
     private val uiEffectChannel = Channel<PlayerUiEffect>()
-    val uiEffect: Flow<PlayerUiEffect> = uiEffectChannel.consumeAsFlow()
+    val uiEffect: Flow<PlayerUiEffect> = uiEffectChannel.receiveAsFlow()
 
     fun onUiEvent(event: PlayerUiEvent) {
         when (event) {

@@ -24,9 +24,9 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import moe.tlaster.precompose.viewmodel.ViewModel
@@ -56,7 +56,7 @@ class DiscoveryViewModel(
     )
 
     private val uiEffectChannel = Channel<DiscoveryUiEffect>()
-    val uiEffect: Flow<DiscoveryUiEffect> = uiEffectChannel.consumeAsFlow()
+    val uiEffect: Flow<DiscoveryUiEffect> = uiEffectChannel.receiveAsFlow()
 
     fun onUiEvent(event: DiscoveryUiEvent) {
         when (event) {
